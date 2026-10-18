@@ -401,6 +401,7 @@ function h(tag, props) {
     }
   }
   for (let i = 2; i < arguments.length; i++) tambahAnak(el, arguments[i]);
+  if (props && props.value !== undefined) el.value = props.value; // select: pasang setelah option tersedia
   return el;
 }
 function tambahAnak(el, a) {
@@ -428,7 +429,7 @@ function kelompok(s, pola) {
 function rupiah(s) { const d = digit(s); return d ? 'Rp' + d.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''; }
 function tglJam(dt) {
   const d = new Date(dt); if (isNaN(d)) return '-';
-  return d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear() + ', ' + String(d.getHours()).padStart(2, '0') + '.' + String(d.getMinutes()).padStart(2, '0');
+  return new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(d);
 }
 function nilaiLokal(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
 function bacaSimpanan() {
@@ -445,9 +446,21 @@ function simpanUmum(r) {
 
 /* ---------- server ---------- */
 async function api(aksi, data) {
-  const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ aksi: aksi, initData: tg.initData, data: data || {} }) });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
+  if (!tg || !tg.initData) throw new Error('Sesi Telegram tidak tersedia. Tutup lalu buka kembali Mini App.');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 45000);
+  try {
+    const r = await fetch(API_URL, { method: 'POST', signal: controller.signal,
+      body: JSON.stringify({ aksi: aksi, initData: tg.initData, data: data || {} }) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    let hasil;
+    try { hasil = await r.json(); } catch (e) { throw new Error('Server tidak mengirim JSON. Periksa URL /exec, akses publik, dan versi deployment Apps Script.'); }
+    if (!hasil || typeof hasil.ok !== 'boolean') throw new Error('Respons server tidak valid.');
+    return hasil;
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('Server belum merespons. Untuk pengiriman, periksa antrean atau chat sebelum mencoba lagi agar tidak terkirim dua kali.');
+    throw e;
+  } finally { clearTimeout(timer); }
 }
 
 /* ---------- navigasi ---------- */
@@ -594,6 +607,38 @@ function cuplik(t) {
   const dari = { wp: 'WP', petugas: 'Petugas', internal: 'Catatan' }[t.terakhir.dari] || '';
   return dari + ': ' + t.terakhir.isi;
 }
+function idPermintaan() {
+  return 'req_' + (globalThis.crypto && crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : Date.now().toString(36) + Math.random().toString(36).slice(2));
+}
+function kartuPengiriman(r, selesai) {
+  const pesan = h('p', { text: r.pesan || r.status });
+  const wadah = h('section', { class: 'kartu', style: 'display:flex;flex-direction:column;gap:10px;margin:10px 0' },
+    h('b', { text: 'Pengiriman: ' + r.status }), pesan,
+    h('div', { class: 'pra', text: r.isi || '' }),
+    r.terbaru ? h('div', { class: 'kecil', text: 'WP terakhir: ' + r.terbaru.wp + '\nBalasan terakhir: ' + (r.terbaru.balasan || 'Belum ada') }) : null);
+  const tindakan = async (aksi) => {
+    const tombol = [...wadah.querySelectorAll('button')]; tombol.forEach(b => b.disabled = true);
+    try {
+      const hasil = await api('konfirmasiKirim', { operasi: r.operasi, revisi: r.revisi, aksi });
+      if (hasil.ok) { wadah.replaceChildren(h('p', { text: hasil.pesan || 'Terkirim ke WP.' })); if (selesai) selesai(hasil); }
+      else if (hasil.operasi) wadah.replaceWith(kartuPengiriman(hasil, selesai));
+      else pesan.textContent = hasil.pesan || 'Belum berhasil. Periksa lagi.';
+    } catch (e) { pesan.textContent = 'Hasil belum diketahui. Muat ulang tiket untuk memeriksa status; jangan mengetik ulang pesan yang sama.'; }
+    finally { tombol.forEach(b => b.disabled = false); }
+  };
+  if (r.tertahan) wadah.append(
+    h('button', { type: 'button', class: 'tombol tombol-utama', onClick: () => tindakan('kirim') }, 'Tetap kirim sebagai tambahan'),
+    h('button', { type: 'button', class: 'tombol tombol-garis', onClick: () => tindakan('batal') }, 'Batalkan'));
+  if (r.bolehTinjau) wadah.append(
+    h('p', { class: 'kecil', text: 'Periksa langsung chat WP. Cocokkan riwayat dan jumlah/kode billing di Sheet jika proses sempat terputus. Tombol ini hanya menutup pemeriksaan; tidak mengirim ulang atau menambah hitungan billing.' }),
+    h('button', { type: 'button', class: 'tombol tombol-garis', onClick: () => {
+      const lanjut = ok => { if (ok) tindakan('ditinjau'); };
+      const tanya = 'Sudah memeriksa chat WP dan mencocokkan pencatatan billing?';
+      if (tg.showConfirm) tg.showConfirm(tanya, lanjut); else lanjut(confirm(tanya));
+    } }, 'Sudah diperiksa di chat WP'));
+  return wadah;
+}
+
 LAYAR.konsol = function () {
   let data = S.konsol || null;
   let saring = S.konsolSaring || 'balas';
@@ -601,15 +646,15 @@ LAYAR.konsol = function () {
   const chips = h('div', { class: 'chip-gulir', role: 'tablist', 'aria-label': 'Saring antrean' });
   const subjudul = h('p', { class: 'kecil' });
   const kelompok = {
-    balas: { nama: 'Perlu dibalas', cek: t => t.status === 'Dilayani' && t.pesanBaru > 0 },
-    tunggu: { nama: 'Menunggu', cek: t => t.status === 'Menunggu' },
-    layani: { nama: 'Dilayani', cek: t => t.status === 'Dilayani' },
-    milikku: { nama: 'Antrean saya', cek: t => t.status === 'Dilayani' && data && t.petugas === data.saya },
+    balas: { nama: 'Perlu dibalas', cek: t => t.alur === 'Perlu dibalas' },
+    proses: { nama: 'Sedang diproses', cek: t => t.alur === 'Sedang diproses' },
+    tunggu: { nama: 'Menunggu WP', cek: t => t.alur === 'Menunggu WP' },
     selesai: { nama: 'Selesai hari ini', cek: t => t.status === 'Selesai' || t.status === 'Batal' },
   };
   const gambar = () => {
     if (!data) { isi.replaceChildren(h('p', { class: 'kecil', text: 'Memuat antrean…' })); return; }
-    subjudul.textContent = 'Masuk sebagai ' + data.saya + ' · diperbarui otomatis';
+    subjudul.textContent = 'Antrean bersama · semua petugas boleh melanjutkan';
+    if (!kelompok[saring]) saring = 'balas';
     const pertama = Object.keys(kelompok).find(k => data.tiket.some(kelompok[k].cek));
     if (!data.tiket.some(kelompok[saring].cek) && S.konsolSaring === undefined && pertama) saring = pertama;
     chips.replaceChildren(...Object.keys(kelompok).map(k => {
@@ -624,10 +669,10 @@ LAYAR.konsol = function () {
       h('span', { style: 'min-width:0' },
         h('span', { class: 'k-judul', text: t.nama + ' · ' + t.layanan }),
         h('span', { class: 'k-cuplik', text: cuplik(t) }),
-        h('span', { class: 'k-cuplik', text: t.status + (t.status === 'Menunggu' ? ' · urutan ke-' + t.posisi + ' · masuk ' + t.masuk : t.petugas ? ' · ' + t.petugas : '') })),
+        h('span', { class: 'k-cuplik', text: t.alur + (t.billingSisa ? ' · sisa ' + t.billingSisa + ' billing' : '') + ' · masuk ' + t.masuk })),
       h('span', { class: 'k-kanan' },
         h('span', { text: t.terakhir ? t.terakhir.jam : t.masuk }),
-        t.pesanBaru > 0 && t.status === 'Dilayani' ? h('span', { class: 'k-baru', 'aria-label': t.pesanBaru + ' pesan belum dibalas', text: String(t.pesanBaru) }) : null))));
+        t.pesanBaru > 0 && ['Menunggu','Dilayani'].includes(t.status) ? h('span', { class: 'k-baru', 'aria-label': t.pesanBaru + ' pesan belum dibalas', text: String(t.pesanBaru) }) : null))));
   };
   const muat = async () => {
     try {
@@ -638,16 +683,24 @@ LAYAR.konsol = function () {
   };
   gambar();
   muat();
+  let cekBerjalan = false;
   S.poll = setInterval(async () => {
-    try { const r = await api('konsolCek', {}); if (r.ok && data && r.versi !== data.versi) muat(); } catch (e) {}
-  }, 6000);
+    if (document.hidden || cekBerjalan) return;
+    cekBerjalan = true;
+    try {
+      const r = await api('konsolCek', {});
+      if (!r.ok || !data || r.versi !== data.versi) await muat();
+    } catch (e) { /* percobaan berikutnya setelah interval */ }
+    finally { cekBerjalan = false; }
+  }, 10000);
   return h('main', { class: 'layar' },
-    h('header', { class: 'kepala' }, h('h2', { text: 'Konsol petugas' }), subjudul),
+    h('header', { class: 'kepala' }, h('h2', { text: 'Antrean bersama' }), subjudul),
     chips, isi);
 };
 
 LAYAR.konsolTiket = function (kunci) {
-  let data = null;
+  let data = null, revisiDraf = null, kiriman = null, mengirim = false;
+  const tertahan = h('div', { 'aria-live': 'polite' });
   const obrolan = h('div', { class: 'obrolan', 'aria-live': 'polite' });
   const info = h('section', { class: 'kartu', style: 'display:flex;flex-direction:column;gap:6px' });
   const judul = h('h2', { text: 'Memuat…' });
@@ -658,8 +711,8 @@ LAYAR.konsolTiket = function (kunci) {
   const kotak = h('textarea', { class: 'isian', rows: 1, placeholder: 'Tulis balasan untuk WP…', 'aria-label': 'Balasan' });
   const internal = h('input', { type: 'checkbox', id: 'k-internal' });
   const tKirim = h('button', { class: 'kirim-bulat', 'aria-label': 'Kirim', disabled: true }, ikon('kirim'));
-  const segarkanTombol = () => { tKirim.disabled = !kotak.value.trim(); kotak.placeholder = internal.checked ? 'Catatan internal (tidak dikirim ke WP)…' : 'Tulis balasan untuk WP…'; };
-  kotak.addEventListener('input', () => { kotak.style.height = 'auto'; kotak.style.height = Math.min(140, kotak.scrollHeight) + 'px'; segarkanTombol(); });
+  const segarkanTombol = () => { tKirim.disabled = mengirim || !data || !kotak.value.trim(); kotak.placeholder = internal.checked ? 'Catatan internal (tidak dikirim ke WP)…' : 'Tulis balasan untuk WP…'; };
+  kotak.addEventListener('input', () => { if (revisiDraf === null && data) revisiDraf = data.revisi; kotak.style.height = 'auto'; kotak.style.height = Math.min(140, kotak.scrollHeight) + 'px'; segarkanTombol(); });
   internal.addEventListener('change', segarkanTombol);
 
   const gambarPesan = () => {
@@ -675,9 +728,12 @@ LAYAR.konsolTiket = function (kunci) {
   const gambarInfo = () => {
     const t = data.tiket;
     judul.textContent = t.id + ' · ' + t.layanan;
-    sub.textContent = t.status + (t.petugas ? ' oleh ' + t.petugas : '') + ' · lewat ' + t.lewat + (t.riwayat ? ' · ' + t.riwayat + ' antrean sebelumnya' : '');
+    sub.textContent = t.alur + ' · antrean bersama' + ' · lewat ' + t.lewat + (t.riwayat ? ' · ' + t.riwayat + ' antrean sebelumnya' : '');
     const npwp = h('button', { class: 'tautan', text: 'Tampilkan NPWP/NIK', onClick: () => { npwp.replaceWith(h('code', { text: t.npwp })); } });
     info.replaceChildren(
+      h('b', { text: data.ringkasan.diminta ? 'Billing diminta ' + data.ringkasan.diminta + ' · terkirim ' + data.ringkasan.terkirim + ' · sisa ' + data.ringkasan.sisa : 'Semua petugas dapat melanjutkan' }),
+      h('div', { class: 'kecil', text: 'WP terakhir: ' + data.ringkasan.wp }),
+      h('div', { class: 'kecil', text: 'Balasan terakhir: ' + (data.ringkasan.balasan || 'Belum ada') }),
       h('div', { class: 'kecil', text: 'Pemohon: ' + t.namaPemohon + ' (' + t.selaku + ') · Nama WP: ' + t.namaWP }),
       h('div', { class: 'kecil' }, 'NPWP/NIK: ', npwp),
       h('div', { class: 'kecil', text: 'Masuk ' + t.masuk + (t.billing ? ' · billing diminta ' + t.permintaan + ', terkirim ' + t.terkirim : '') }),
@@ -685,7 +741,8 @@ LAYAR.konsolTiket = function (kunci) {
       t.topik ? h('button', { class: 'tautan', style: 'align-self:flex-start', onClick: () => bukaTautan(t.topik) }, 'Buka topik di grup (untuk kirim file)') : null);
     const aktif = t.status === 'Menunggu' || t.status === 'Dilayani';
     aksi.replaceChildren(...[
-      t.status === 'Menunggu' ? h('button', { class: 'chip', onClick: () => jalankan('ambil') }, '✋ Ambil') : null,
+      aktif ? h('button', { class: 'chip', onClick: () => jalankan('tunggu') }, '⏳ Menunggu WP') : null,
+      aktif ? h('button', { class: 'chip', onClick: () => jalankan('proses') }, '🔧 Sedang diproses') : null,
       aktif && data.template.length ? h('button', { class: 'chip', onClick: () => tampilLembar('template') }, '⚡ Jawaban cepat') : null,
       aktif && t.billing ? h('button', { class: 'chip', onClick: () => buka('billing', t.kunci) }, '🧾 Kode billing') : null,
       aktif && data.layanan.length ? h('button', { class: 'chip', onClick: () => tampilLembar('pindah') }, '🔀 Pindah') : null,
@@ -707,27 +764,34 @@ LAYAR.konsolTiket = function (kunci) {
   const jalankan = async (a, ekstra, keluar) => {
     galat.replaceChildren();
     try {
-      const r = await api('konsolAksi', Object.assign({ kunci: kunci, aksi: a }, ekstra || {}));
+      const r = await api('konsolAksi', Object.assign({ kunci: kunci, aksi: a, revisi: data.revisi, permintaan: idPermintaan() }, ekstra || {}));
+      if (r.perluKonfirmasiSisa) { konfirmasi(r.pesan, () => jalankan('selesai', { tutupSisa: true, revisi: r.revisi }, true)); return; }
+      if (r.operasi && !r.ok) { galat.replaceChildren(kartuPengiriman(r, () => muat())); muat(); return; }
       if (!r.ok) throw new Error(r.pesan);
       getar('success'); lembar.replaceChildren();
       if (keluar) { S.konsol = null; kembali(); } else muat();
     } catch (e) { getar('error'); galat.replaceChildren(h('div', { class: 'banner banner-galat', text: e.message || 'Gagal.' })); }
   };
   tKirim.addEventListener('click', async () => {
-    const teks = kotak.value.trim();
-    if (!teks) return;
-    tKirim.disabled = true; galat.replaceChildren();
-    const sementara = h('div', { class: 'gelembung ' + (internal.checked ? 'internal' : 'petugas'), style: 'opacity:.6' }, teks, h('small', { text: 'mengirim…' }));
-    obrolan.append(sementara); window.scrollTo(0, document.body.scrollHeight);
-    try {
-      const r = await api('konsolKirim', { kunci: kunci, teks: teks, internal: internal.checked });
-      if (!r.ok) throw new Error(r.pesan);
-      kotak.value = ''; kotak.style.height = 'auto'; getar('success'); muat();
-    } catch (e) {
-      sementara.remove(); getar('error');
-      galat.replaceChildren(h('div', { class: 'banner banner-galat', text: e.message || 'Pesan gagal terkirim.' }));
+    const teks = kotak.value.trim(), catatan = internal.checked;
+    if (!teks || mengirim || !data) return;
+    if (kiriman && (kiriman.teks !== teks || kiriman.internal !== catatan)) {
+      galat.replaceChildren(h('div', { class: 'banner banner-awas', text: 'Periksa pengiriman sebelumnya dahulu. Kembalikan isi draf untuk memeriksa dengan tombol Kirim, atau buka ulang tiket dan lihat riwayat/pengiriman tertahan.' })); return;
     }
-    segarkanTombol();
+    kiriman = kiriman || { kunci, teks, internal: catatan, permintaan: idPermintaan(), revisi: revisiDraf === null ? data.revisi : revisiDraf };
+    mengirim = true; segarkanTombol(); galat.replaceChildren();
+    try {
+      const r = await api('konsolKirim', kiriman);
+      if (r.operasi && !r.ok) {
+        // Draf sudah disimpan server dan dapat dilanjutkan petugas lain.
+        galat.replaceChildren(kartuPengiriman(r, () => muat()));
+        kotak.value = ''; revisiDraf = null; kiriman = null; await muat();
+      } else if (!r.ok) { kiriman = null; throw new Error(r.pesan); }
+      else { kotak.value = ''; revisiDraf = null; kiriman = null; kotak.style.height = 'auto'; getar('success'); await muat(); }
+    } catch (e) {
+      getar('error');
+      galat.replaceChildren(h('div', { class: 'banner banner-galat', text: e.message || 'Hasil belum diketahui. Tekan Kirim kembali dengan draf yang sama untuk memeriksa; ID pengiriman tetap sama.' }));
+    } finally { mengirim = false; segarkanTombol(); }
   });
   const penyusun = h('div', { class: 'penyusun' },
     aksi, lembar,
@@ -738,17 +802,25 @@ LAYAR.konsolTiket = function (kunci) {
       const r = await api('konsolBuka', { kunci: kunci });
       if (!r.ok) { galat.replaceChildren(h('div', { class: 'banner banner-galat', text: r.pesan })); return; }
       const pertama = !data;
-      data = r; gambarInfo(); gambarPesan();
+      data = r; gambarInfo(); gambarPesan(); segarkanTombol();
+      tertahan.replaceChildren(...(r.tertahan || []).map(x => kartuPengiriman(x, () => muat())));
       if (pertama) window.scrollTo(0, document.body.scrollHeight);
     } catch (e) { if (!data) galat.replaceChildren(h('div', { class: 'banner banner-galat', text: 'Tidak dapat terhubung ke server.' })); }
   };
   muat();
+  let cekBerjalan = false;
   S.poll = setInterval(async () => {
-    try { const r = await api('konsolCek', {}); if (r.ok && data && r.versi !== data.versi) muat(); } catch (e) {}
-  }, 5000);
+    if (document.hidden || cekBerjalan) return;
+    cekBerjalan = true;
+    try {
+      const r = await api('konsolCek', {});
+      if (!r.ok || !data || r.versi !== data.versi) await muat();
+    } catch (e) { /* percobaan berikutnya setelah interval */ }
+    finally { cekBerjalan = false; }
+  }, 10000);
   return h('main', { class: 'layar' },
     h('header', { class: 'kepala' }, judul, sub),
-    info, obrolan, galat, penyusun);
+    info, tertahan, obrolan, galat, penyusun);
 };
 
 /* ---------- penilaian layanan ---------- */
@@ -1174,7 +1246,7 @@ LAYAR.sukses = function (arg) {
           h('dt', { text: 'Loket' }), h('dd', { text: t.loket || '-' }),
           h('dt', { text: 'Urutan' }), h('dd', { text: 'ke-' + t.posisi }),
           h('dt', { text: 'Waktu' }), h('dd', { text: (t.masuk || '') + ' WIB' })))),
-    h('div', { class: 'banner banner-ok', text: 'Nomor antrean juga sudah dikirim ke chat Telegram. Petugas akan membalas di sana, dan Anda bisa mengirim foto atau dokumen pendukung di chat tersebut.' }),
+    h('div', { class: 'banner ' + (t.notifikasiTerkirim ? 'banner-ok' : 'banner-awas'), text: t.notifikasiTerkirim ? 'Nomor antrean sudah dikirim melalui ' + (t.lewatBot ? 'chat bot' : 'chat Telegram') + '. Petugas akan membalas di sana.' : 'Antrean sudah tersimpan, tetapi pesan nomor antrean belum berhasil dikirim. Simpan nomor ini dan hubungi akun kantor; jangan mengambil antrean baru.' }),
     S.data.lewatKantor && S.data.akunKantor ? h('button', { class: 'tombol tombol-utama lebar', onClick: () => {
       // pesan singkat dari WP membuka kembali jendela balasan 24 jam akun kantor
       const url = S.data.akunKantor.link + '?text=' + encodeURIComponent('Halo, saya sudah mengambil antrean ' + t.id + '.');
@@ -1300,4 +1372,461 @@ LAYAR.syarat = function () {
     const daftar = model.layanan.filter(l => !q || (l.nama + ' ' + (l.judul || '') + ' ' + JSON.stringify(l.opsi || []) + ' ' + JSON.stringify(l.langkah || [])).toLowerCase().includes(q));
     if (!daftar.length) { isi.replaceChildren(h('p', { class: 'kecil', text: 'Tidak ada layanan yang cocok. Coba kata lain.' })); return; }
     isi.replaceChildren(...daftar.map(l => {
-      const waktu = catatanSyarat(l, 'Proses pen
+      const waktu = catatanSyarat(l, 'Proses pengerjaan')[0];
+      return h('button', { class: 'sy-item', onClick: () => buka('syaratKpp', l.no) },
+        h('span', { class: 'sy-no', text: String(l.no) }),
+        h('span', { style: 'min-width:0' },
+          h('span', { class: 'sy-nama', text: l.nama }),
+          h('span', { class: 'sy-meta' },
+            ringkasJenis(l).map(j => h('span', { class: 'sy-tag', text: j })),
+            waktu ? h('span', { class: 'sy-tag waktu', text: '⏱ ' + waktu.replace(/\s*(apabila|sejak|setelah|[,;]).*/i, '') }) : null)),
+        h('span', { class: 'panah' }, ikon('panah')));
+    }));
+  };
+  const gambarInfo = () => {
+    if (!model.info || !model.info.length) { info.replaceChildren(); return; }
+    info.replaceChildren(h('div', { class: 'judul-bagian' }, h('h3', { text: 'Informasi tambahan' })),
+      h('section', { class: 'kartu info-tambahan', style: 'display:flex;flex-direction:column;gap:2px' },
+        model.info.map(t => h('p', { class: /:\s*$/.test(t) ? 'sub' : '' }, ...teksTautan(t.replace(/:\s*$/, ''))))));
+  };
+  cari.addEventListener('input', () => model && gambar());
+  muatSyarat().then(r => {
+    if (!r.model || !r.model.layanan || !r.model.layanan.length) { gantiDengan('syaratLama'); return; }
+    model = r.model;
+    sumber.replaceChildren(ikon('dokumen'), 'Sumber: daftar persyaratan KPP Pratama Surabaya Rungkut · diperbarui ' + model.diperbarui);
+    gambar(); gambarInfo();
+  });
+  return h('main', { class: 'layar' },
+    kepala('Persyaratan layanan', 'Pilih layanan, lalu jenis wajib pajak Anda untuk melihat dokumen yang perlu disiapkan.'),
+    h('div', { class: 'cari' }, ikon('cari'), cari),
+    isi, info, sumber,
+    h('button', { class: 'tombol tombol-kedua lebar', onClick: () => bukaTautan((S.data.kantor && S.data.kantor.formulir) || 'https://bit.ly/FormulirPAJAK615') }, 'Unduh formulir permohonan', ikon('tautan')));
+};
+function layarMemuatKecil() { return h('p', { class: 'kecil', style: 'text-align:center;padding:16px 0', text: 'Memuat persyaratan terbaru…' }); }
+
+LAYAR.syaratKpp = function (no) {
+  const model = bacaSyaratLokal();
+  const l = model && model.layanan.find(x => x.no === no);
+  if (!l) return LAYAR.syarat();
+  const tingkat = pilihanJalur(l);
+  const pilih = S.pilihSyarat && S.pilihSyarat.no === no ? S.pilihSyarat.nilai : {};
+  S.pilihSyarat = { no: no, nilai: pilih };
+  const wadah = h('div', { class: 'tumpuk', style: 'display:flex;flex-direction:column;gap:16px' });
+
+  const gambar = () => {
+    // saring opsi tingkat demi tingkat, seperti membaca baris di sheet
+    let cocok = (l.opsi || []).slice();
+    const pemilih = [];
+    const jalur = [];
+    tingkat.forEach(t => {
+      const nilai = [];
+      cocok.forEach(o => { const v = o.n[t.i]; if (nilai.indexOf(v) < 0) nilai.push(v); });
+      const terisi = nilai.filter(Boolean);
+      if (!terisi.length) return;
+      if (terisi.length === 1 && nilai.length === 1) { jalur.push(terisi[0]); cocok = cocok.filter(o => o.n[t.i] === terisi[0]); return; }
+      if (nilai.indexOf(pilih[t.i]) < 0) pilih[t.i] = nilai[0];
+      pemilih.push(h('div', { class: 'pilih', role: 'radiogroup', 'aria-label': t.nama },
+        h('span', { text: t.nama }),
+        h('div', { class: 'chips' }, nilai.map(v => h('button', { type: 'button', class: 'chip', role: 'radio', 'aria-checked': String(pilih[t.i] === v), text: v || 'Lainnya',
+          onClick: () => { pilih[t.i] = v; tingkat.filter(x => x.i > t.i).forEach(x => delete pilih[x.i]); gambar(); } })))));
+      cocok = cocok.filter(o => o.n[t.i] === pilih[t.i]);
+    });
+    // cara pengajuan (kolom "Layanan" di sheet)
+    let saluran = null;
+    if (l.sal >= 0) {
+      const nilai = [];
+      cocok.forEach(o => { const v = o.n[l.sal]; if (v && nilai.indexOf(v) < 0) nilai.push(v); });
+      if (nilai.length > 1) {
+        if (nilai.indexOf(pilih.sal) < 0) pilih.sal = nilai[0];
+        pemilih.push(h('div', { class: 'pilih', role: 'radiogroup', 'aria-label': 'Cara pengajuan' }, h('span', { text: 'Cara pengajuan' }),
+          h('div', { class: 'chips' }, nilai.map(v => h('button', { type: 'button', class: 'chip', role: 'radio', 'aria-checked': String(pilih.sal === v), text: v, onClick: () => { pilih.sal = v; gambar(); } })))));
+        cocok = cocok.filter(o => o.n[l.sal] === pilih.sal);
+      }
+      saluran = cocok[0] ? cocok[0].n[l.sal] : null;
+    }
+    const o = cocok[0];
+    const syarat = o ? o.s : [];
+    const ringkasJalur = tingkat.map(t => o && o.n[t.i]).filter(Boolean);
+
+    // daftar centang dokumen
+    const bar = h('span');
+    const hitung = h('span', { class: 'kecil' });
+    const daftarCek = h('ul', { class: 'cek-daftar' });
+    const perbarui = () => {
+      const semua = daftarCek.querySelectorAll('input');
+      const siap = Array.prototype.filter.call(semua, c => c.checked).length;
+      hitung.textContent = siap + ' dari ' + semua.length + ' siap';
+      bar.style.width = (semua.length ? Math.round(siap / semua.length * 100) : 0) + '%';
+    };
+    syarat.forEach((t, i) => {
+      const sub = /^[*•\-–]\s*/.test(t);
+      const id = 'sy-' + no + '-' + i;
+      daftarCek.append(h('li', { class: sub ? 'sub' : '' },
+        h('label', { for: id }, h('input', { type: 'checkbox', id: id, onChange: perbarui }), h('span', { class: 'pra', text: t.replace(/^[*•\-–]\s*/, '') }))));
+    });
+    perbarui();
+    const perhatian = catatanSyarat(l, 'Hal yang harus diperhatikan');
+    const proses = catatanSyarat(l, 'Proses pengerjaan');
+    const produk = catatanSyarat(l, 'Produk hukum');
+    const lain = (l.cat || []).filter(c => ['Hal yang harus diperhatikan', 'Proses pengerjaan', 'Produk hukum'].indexOf(c[0]) < 0);
+
+    wadah.replaceChildren(...[
+      pemilih.length ? h('section', { class: 'kartu', style: 'display:flex;flex-direction:column;gap:14px' }, pemilih) : null,
+      jalur.length ? h('div', { class: 'jalur' }, jalur.map(j => h('span', { text: j }))) : null,
+      saluran ? h('div', { class: 'saluran' }, ikon('alur'), h('span', null, 'Cara pengajuan: ', h('b', { text: saluran }))) : null,
+      (l.opsi || []).length ? h('section', { class: 'kartu blok' },
+        h('div', { class: 'blok-judul' }, h('h3', null, ikon('dokumen'), 'Dokumen yang disiapkan'), syarat.length ? hitung : null),
+        syarat.length ? h('div', { class: 'progres', 'aria-hidden': 'true' }, bar) : null,
+        syarat.length ? daftarCek : h('p', { class: 'kecil', text: saluran && /dihapus/i.test(saluran) ? 'Untuk pilihan ini NPWP cabang dihapus; tidak ada dokumen yang perlu diserahkan.' : 'Tidak ada dokumen khusus untuk pilihan ini.' })) : null,
+      (l.langkah || []).length ? h('section', { class: 'kartu blok' },
+        h('div', { class: 'blok-judul' }, h('h3', null, ikon('alur'), 'Tata cara')),
+        h('ol', { class: 'langkah-daftar' }, l.langkah.map(t => h('li', null, h('span', { class: 'pra' }, ...teksTautan(t)))))) : null,
+      perhatian.length ? h('div', { class: 'catatan' }, ikon('catatan'), h('div', { style: 'display:flex;flex-direction:column;gap:4px' },
+        h('b', { text: 'Hal yang harus diperhatikan' }),
+        perhatian.length > 1 ? h('ul', { class: 'daftar-titik' }, perhatian.map(t => h('li', null, ...teksTautan(t)))) : h('span', null, ...teksTautan(perhatian[0])))) : null,
+      proses.length || produk.length ? h('dl', { class: 'kartu rinci' },
+        proses.length ? [h('dt', { text: 'Lama proses' }), h('dd', null, proses.length > 1 ? h('ul', { class: 'daftar-titik' }, proses.map(t => h('li', { text: t }))) : proses[0])] : null,
+        produk.length ? [h('dt', { text: 'Hasil layanan' }), h('dd', null, produk.length > 1 ? h('ul', { class: 'daftar-titik' }, produk.map(t => h('li', { text: t }))) : produk[0])] : null) : null,
+      ...lain.map(c => h('section', { class: 'kartu', style: 'display:flex;flex-direction:column;gap:6px' }, h('b', { text: c[0] }), h('ul', { class: 'daftar-titik' }, c[1].map(t => h('li', null, ...teksTautan(t)))))),
+      h('div', { class: 'deret' },
+        h('button', { class: 'tombol tombol-kedua', onClick: () => bukaTautan((S.data.kantor && S.data.kantor.formulir) || 'https://bit.ly/FormulirPAJAK615') }, 'Formulir', ikon('tautan')),
+        model.idSheet ? h('button', { class: 'tombol tombol-kedua', onClick: () => bukaTautan('https://docs.google.com/spreadsheets/d/' + model.idSheet + '/edit#gid=' + l.gid) }, 'Lihat sheet', ikon('tautan')) : null),
+      h('button', { class: 'tombol tombol-utama lebar', onClick: () => buka('form', { layanan: tebakLayanan(l.nama), uraian: 'Permohonan: ' + l.nama + (ringkasJalur.length ? ' (' + ringkasJalur.join(', ') + ')' : '') + '\n' }) }, 'Ajukan lewat antrean'),
+    ].filter(Boolean));
+  };
+  gambar();
+  return h('main', { class: 'layar' },
+    h('header', { class: 'kepala' },
+      l.dasar ? h('span', { class: 'lencana', text: l.dasar }) : null,
+      h('h2', { text: l.nama }),
+      h('p', { class: 'kecil', text: 'Pilih sesuai keadaan Anda; daftar dokumen menyesuaikan.' })),
+    wadah,
+    h('p', { class: 'sumber-info', text: 'Sumber: daftar persyaratan KPP · diperbarui ' + model.diperbarui }));
+};
+
+LAYAR.syaratLama = function () {
+  const k = S.data.kantor;
+  const daftar = h('div', { class: 'daftar' });
+  const urutanKat = [];
+  S.data.syarat.forEach(x => { if (urutanKat.indexOf(x.kategori) < 0) urutanKat.push(x.kategori); });
+  const isi = q => {
+    const kata = q.trim().toLowerCase();
+    const hasil = S.data.syarat.filter(x => !kata || (x.layanan + ' ' + x.ringkasan + ' ' + x.syarat + ' ' + x.cara).toLowerCase().includes(kata));
+    if (!hasil.length) { daftar.replaceChildren(h('p', { class: 'kecil', text: 'Tidak ada layanan yang cocok. Coba kata lain.' })); return; }
+    const anak = [];
+    urutanKat.forEach(kat => {
+      const di = hasil.filter(x => x.kategori === kat);
+      if (!di.length) return;
+      anak.push(h('div', { class: 'grup-judul' }, h('span', { text: kat }), h('span', { class: 'jumlah', text: String(di.length) })));
+      di.forEach(x => anak.push(h('button', { class: 'item', onClick: () => buka('syaratDetail', x) },
+        h('span', { class: 'item-isi' }, h('span', { class: 'item-judul', text: x.layanan }), x.ringkasan ? h('span', { class: 'kecil', text: x.ringkasan }) : null),
+        h('span', { class: 'panah' }, ikon('panah')))));
+    });
+    daftar.replaceChildren(...anak);
+  };
+  isi('');
+  return h('main', { class: 'layar' },
+    kepala('Persyaratan dokumen', 'Pilih permohonan untuk melihat dokumen yang disiapkan dan cara mengajukannya.'),
+    h('div', { class: 'cari' }, ikon('cari'), h('input', { class: 'isian', type: 'search', placeholder: 'Cari: NPWP, PKP, pemindahbukuan…', 'aria-label': 'Cari layanan', onInput: e => isi(e.target.value) })),
+    daftar,
+    h('button', { class: 'tombol tombol-kedua lebar', onClick: () => bukaTautan(k.formulir) }, 'Unduh formulir permohonan', ikon('tautan')));
+};
+LAYAR.syaratDetail = function (x) {
+  const k = S.data.kantor;
+  const poin = String(x.syarat || '').split('\n').map(t => t.trim()).filter(Boolean);
+  const langkah = String(x.cara || '').split('\n').map(t => t.replace(/^\d+[.)]\s*/, '').trim()).filter(Boolean);
+  const bar = h('span');
+  const hitung = h('span', { class: 'kecil' });
+  const daftarCek = h('ul', { class: 'cek-daftar' });
+  const perbarui = () => {
+    const semua = daftarCek.querySelectorAll('input');
+    const siap = Array.prototype.filter.call(semua, c => c.checked).length;
+    hitung.textContent = siap + ' dari ' + semua.length + ' siap';
+    bar.style.width = (semua.length ? Math.round(siap / semua.length * 100) : 0) + '%';
+  };
+  poin.forEach((t, i) => {
+    const sub = /^[–-]\s+/.test(t);
+    const id = 'cek-' + i;
+    daftarCek.append(h('li', { class: sub ? 'sub' : '' },
+      h('label', { for: id }, h('input', { type: 'checkbox', id: id, onChange: perbarui }), h('span', { text: t.replace(/^[–-]\s+/, '') }))));
+  });
+  perbarui();
+  return h('main', { class: 'layar' },
+    h('header', { class: 'kepala' },
+      h('span', { class: 'lencana', text: x.kategori }),
+      h('h2', { text: x.layanan }),
+      x.ringkasan ? h('p', { class: 'kecil', text: x.ringkasan }) : null),
+    poin.length ? h('section', { class: 'kartu blok' },
+      h('div', { class: 'blok-judul' }, h('h3', null, ikon('dokumen'), 'Dokumen yang disiapkan'), hitung),
+      h('div', { class: 'progres', 'aria-hidden': 'true' }, bar),
+      h('p', { class: 'kecil', text: 'Centang dokumen yang sudah Anda siapkan.' }),
+      daftarCek) : null,
+    langkah.length ? h('section', { class: 'kartu blok' },
+      h('div', { class: 'blok-judul' }, h('h3', null, ikon('alur'), 'Cara mengajukan')),
+      h('ol', { class: 'langkah-daftar' }, langkah.map(t => h('li', null, h('span', { text: t }))))) : null,
+    x.waktu ? h('dl', { class: 'kartu rinci' }, h('dt', { text: 'Lama proses' }), h('dd', { text: x.waktu })) : null,
+    x.catatan ? h('div', { class: 'catatan' }, ikon('catatan'), h('span', { class: 'pra', text: x.catatan })) : null,
+    h('div', { class: 'deret' },
+      h('button', { class: 'tombol tombol-kedua', onClick: () => bukaTautan(k.formulir) }, 'Formulir', ikon('tautan')),
+      /^https?:\/\//.test(x.sumber) ? h('button', { class: 'tombol tombol-kedua', onClick: () => bukaTautan(x.sumber) }, 'Sumber', ikon('tautan')) : null),
+    h('button', { class: 'tombol tombol-utama lebar', onClick: () => buka('form', { layanan: tebakLayanan(x.layanan), uraian: 'Permohonan: ' + x.layanan + '\n' }) }, 'Ajukan lewat antrean'),
+    h('p', { class: 'kecil', text: 'Persyaratan dapat berbeda untuk kasus tertentu; petugas akan mengonfirmasi saat Anda dilayani.' }));
+};
+function tebakLayanan(nama) {
+  const n = nama.toLowerCase();
+  const peta = [[/sanksi/, 'P'], [/pkp|faktur/, 'F'], [/spt|stp/, 'S'], [/efin|sertifikat|password/, 'C'], [/npwp|nik|data|efektif|pemindahan|kuasa/, 'N'], [/ssp|pemindahbukuan|ppystt|skb/, 'K']];
+  for (const [re, kode] of peta) if (re.test(n) && kodeLayanan(kode)) return kode;
+  return kodeLayanan('K');
+}
+
+/* ---------- antrean saya ---------- */
+LAYAR.status = function () {
+  const list = S.data.tiketSaya;
+  if (!list.length) {
+    return h('main', { class: 'layar' },
+      kepala('Antrean saya'),
+      h('div', { class: 'kartu' }, h('p', { text: 'Tidak ada antrean aktif.' })),
+      h('button', { class: 'tombol tombol-utama lebar', onClick: () => gantiDengan('form') }, 'Ambil antrean'));
+  }
+  return h('main', { class: 'layar' },
+    kepala('Antrean saya', 'Petugas membalas lewat chat Telegram.'),
+    list.map(t => karcis(t, { aksi: h('button', { class: 'tombol tombol-bahaya', style: 'min-height:44px', onClick: () => batal(t) }, 'Batalkan antrean') })),
+    h('button', { class: 'tombol tombol-garis lebar', onClick: muatUlang }, 'Muat ulang'));
+};
+function batal(t) {
+  const lanjut = async ok => {
+    if (!ok) return;
+    render(layarMemuat('Membatalkan…'));
+    try {
+      const r = await api('batalTiket', { kunci: t.kunci });
+      if (!r.ok) throw new Error(r.pesan);
+      getar('success');
+      await muatUlang();
+    } catch (e) { tampil(); tg.showAlert ? tg.showAlert(e.message || 'Gagal membatalkan.') : alert(e.message); }
+  };
+  const tanya = t.status === 'Dilayani'
+    ? 'Antrean ' + t.id + ' sedang dilayani petugas. Tetap batalkan?'
+    : 'Batalkan antrean ' + t.id + '?';
+  if (tg.showConfirm) tg.showConfirm(tanya, lanjut); else lanjut(confirm(tanya));
+}
+async function muatUlang() {
+  render(layarMemuat());
+  try {
+    const r = await api('awal', { mode: 'status' });
+    if (!r.ok) throw new Error(r.pesan || 'Gagal memuat antrean.');
+    S.data = r; simpanUmum(r); tampil();
+  } catch (e) { render(LAYAR.galat({ pesan: e.message || 'Gagal memuat antrean terbaru.', ulang: true })); }
+}
+
+/* ---------- petugas: kirim kode billing ---------- */
+LAYAR.billing = function (kunci) {
+  const wadah = h('main', { class: 'layar' }, layarMemuat('Memuat tiket…'));
+  api('detailTiket', { kunci: kunci }).then(r => {
+    if (!r.ok) { wadah.replaceChildren(...LAYAR.galat({ pesan: r.pesan }).childNodes); return; }
+    wadah.replaceChildren(formBilling(r));
+  }).catch(() => wadah.replaceChildren(...LAYAR.galat({ pesan: 'Tidak dapat terhubung ke server.', ulang: true }).childNodes));
+  return wadah;
+};
+function formBilling(r) {
+  const t = r.tiket;
+  let permintaanBilling = null;
+  const entri = [];
+  let seq = 0;
+  const wadahEntri = h('div', { class: 'daftar' });
+  const iBerlaku = h('input', { class: 'isian', id: 'b-berlaku', type: 'datetime-local', value: '' });
+  const banner = h('div', { role: 'alert' });
+  const pDaftar = h('div', { style: 'display:flex;flex-direction:column;gap:6px' });
+  const pJudul = h('div');
+  const pBerlaku = h('div');
+  const tombolTambah = h('button', { type: 'button', class: 'tombol tombol-kedua lebar', onClick: () => { const e = buatEntri(); e.iKode.focus(); } }, '+ Tambah kode billing');
+  const tombol = h('button', { class: 'tombol tombol-utama lebar', type: 'submit' });
+
+  function jenisDari(e) { return e.sJenis.value === '__lain' ? e.iJenisLain.value.trim() : e.sJenis.value; }
+  function buatEntri() {
+    const id = ++seq;
+    const e = {};
+    e.iKode = h('input', { class: 'isian mono besar', id: 'b-kode-' + id, inputmode: 'numeric', autocomplete: 'off', maxlength: '18', placeholder: '0000 0000 0000 000', 'aria-describedby': 'b-kode-h-' + id + ' b-kode-e-' + id });
+    e.hKode = h('p', { class: 'bantuan', id: 'b-kode-h-' + id, text: '0 dari 15 digit' });
+    e.eKode = h('p', { class: 'salah', id: 'b-kode-e-' + id });
+    e.sJenis = h('select', { class: 'isian', id: 'b-jenis-' + id, 'aria-label': 'Jenis pajak' },
+      h('option', { value: '', text: 'Jenis pajak (opsional)' }), r.jenisPajak.map(j => h('option', { value: j, text: j })), h('option', { value: '__lain', text: 'Lainnya…' }));
+    e.iJenisLain = h('input', { class: 'isian', placeholder: 'Tulis jenis pajak', maxlength: '120', hidden: true, 'aria-label': 'Jenis pajak lainnya' });
+    e.iJumlah = h('input', { class: 'isian', id: 'b-jumlah-' + id, inputmode: 'numeric', placeholder: 'Jumlah (opsional), mis. Rp20.000.000', autocomplete: 'off', 'aria-label': 'Jumlah' });
+    e.judul = h('span', { class: 'label' });
+    e.hapus = h('button', { type: 'button', class: 'tombol tombol-garis hapus', 'aria-label': 'Hapus kode ini', onClick: () => hapusEntri(e) }, 'Hapus');
+    e.iKode.addEventListener('input', () => { e.iKode.value = kelompok(e.iKode.value, [4, 4, 4, 3]).slice(0, 18); e.eKode.textContent = ''; e.iKode.removeAttribute('aria-invalid'); perbarui(); jaga(true); });
+    e.sJenis.addEventListener('change', () => { e.iJenisLain.hidden = e.sJenis.value !== '__lain'; if (!e.iJenisLain.hidden) e.iJenisLain.focus(); perbarui(); });
+    e.iJenisLain.addEventListener('input', perbarui);
+    e.iJumlah.addEventListener('input', () => { e.iJumlah.value = rupiah(e.iJumlah.value); perbarui(); });
+    e.el = h('fieldset', { class: 'kartu entri' },
+      h('div', { class: 'entri-judul' }, e.judul, e.hapus),
+      h('div', { class: 'bidang' }, h('label', { class: 'sr', for: 'b-kode-' + id, text: 'Kode billing' }), e.iKode, e.hKode, e.eKode),
+      e.sJenis, e.iJenisLain, e.iJumlah);
+    entri.push(e);
+    wadahEntri.append(e.el);
+    nomori();
+    perbarui();
+    return e;
+  }
+  function hapusEntri(e) {
+    if (entri.length === 1) return;
+    entri.splice(entri.indexOf(e), 1);
+    e.el.remove();
+    nomori();
+    perbarui();
+  }
+  function nomori() {
+    entri.forEach((e, i) => { e.judul.textContent = 'Kode billing ' + (i + 1); e.hapus.hidden = entri.length === 1; });
+    tombolTambah.hidden = entri.length >= 20;
+  }
+  function perbarui() {
+    pDaftar.replaceChildren(...entri.map((e, i) => {
+      const kode = digit(e.iKode.value);
+      const ok = kode.length === 15;
+      e.iKode.classList.toggle('valid', ok);
+      e.hKode.className = 'bantuan' + (ok ? ' ok' : '');
+      e.hKode.textContent = kode.length + ' dari 15 digit';
+      const ket = [jenisDari(e), rupiah(e.iJumlah.value)].filter(Boolean).join(' · ');
+      return h('div', null,
+        h('div', { class: 'nomor', text: (entri.length > 1 ? (i + 1) + '. ' : '') + (kode ? kelompok(kode, [4, 4, 4, 3]) : '•••• •••• •••• •••') }),
+        ket ? h('div', { class: 'kecil', text: ket }) : null);
+    }));
+    pJudul.replaceChildren('Yth. Bapak/Ibu ', h('b', { text: t.namaPemohon }), ', berikut ' + (entri.length > 1 ? entri.length + ' kode billing' : 'kode billing') + ' atas permohonan ', h('b', { text: t.id }), ':');
+    pBerlaku.textContent = iBerlaku.value ? 'Berlaku s.d. ' + tglJam(new Date(iBerlaku.value + ':00+07:00')) + ' WIB' : 'Tanggal kedaluwarsa: lihat dokumen billing atau konfirmasi petugas.';
+    tombol.textContent = entri.length > 1 ? 'Kirim ' + entri.length + ' kode ke ' + t.namaPemohon : 'Kirim ke ' + t.namaPemohon;
+  }
+  iBerlaku.addEventListener('input', perbarui);
+
+  async function kirim(ev) {
+    ev.preventDefault();
+    banner.replaceChildren();
+    const items = [];
+    let pertamaSalah = null;
+    entri.forEach(e => {
+      const kode = digit(e.iKode.value);
+      let pesan = '';
+      if (kode.length !== 15) pesan = 'Kode billing harus 15 digit angka.';
+      else if (items.some(x => x.kode === kode)) pesan = 'Kode ini sudah ditulis di atas.';
+      else if (t.kodeTerkirim.includes(kode)) pesan = 'Kode ini sudah tercatat terkirim. Periksa riwayat.';
+      e.eKode.textContent = pesan;
+      if (pesan) { e.iKode.setAttribute('aria-invalid', 'true'); pertamaSalah = pertamaSalah || e.iKode; }
+      else items.push({ kode, jenis: jenisDari(e), jumlah: digit(e.iJumlah.value) });
+    });
+    if (pertamaSalah) { pertamaSalah.focus(); getar('error'); return; }
+    tombol.disabled = true; tombol.textContent = 'Mengirim…';
+    try {
+      const berlaku = iBerlaku.value ? new Date(iBerlaku.value + ':00+07:00').toISOString() : '';
+      const isiKirim = JSON.stringify({ items, berlaku });
+      if (permintaanBilling && permintaanBilling.isi !== isiKirim) throw new Error('Periksa pengiriman sebelumnya di tiket dahulu sebelum mengubah kode yang statusnya belum diketahui.');
+      permintaanBilling = permintaanBilling || { id: idPermintaan(), isi: isiKirim };
+      const res = await api('kirimBilling', { kunci: t.kunci, items, berlaku, permintaan: permintaanBilling.id, revisi: r.revisi });
+      if (res.operasi && !res.ok) {
+        banner.replaceChildren(kartuPengiriman(res, hasil => {
+          if (hasil.dibatalkan) gantiDengan('konsolTiket', t.kunci);
+          else { jaga(false); gantiDengan('sukses', { jenis: 'billing', nama: t.namaPemohon, id: t.id, jumlah: items.length }); }
+        }), h('button', { type: 'button', class: 'tombol tombol-garis', onClick: () => gantiDengan('konsolTiket', t.kunci) }, 'Buka tiket & status pengiriman'));
+        tombol.textContent = 'Periksa pengiriman di atas'; return;
+      }
+      if (!res.ok) permintaanBilling = null;
+      if (!res.ok) throw new Error(res.pesan);
+      getar('success'); jaga(false);
+      gantiDengan('sukses', { jenis: 'billing', nama: t.namaPemohon, id: t.id, jumlah: items.length });
+    } catch (e) {
+      getar('error');
+      banner.replaceChildren(h('div', { class: 'banner banner-galat', text: e.message || 'Gagal mengirim.' }));
+      tombol.disabled = false; perbarui();
+    }
+  }
+
+  buatEntri();
+  const sisa = t.permintaan ? Math.max(0, t.permintaan - t.terkirim) : 0;
+  for (let i = 1; i < Math.min(sisa, 5); i++) buatEntri();
+
+  return h('form', { class: 'layar', novalidate: true, onSubmit: kirim },
+    kepala('Kirim kode billing', t.id + ' · ' + t.layanan),
+    h('dl', { class: 'kartu rinci' },
+      h('dt', { text: 'Pemohon' }), h('dd', { text: t.namaPemohon + ' (' + t.selaku + ')' }),
+      h('dt', { text: 'Nama WP' }), h('dd', { text: t.namaWP }),
+      h('dt', { text: 'NPWP/NIK' }), h('dd', { class: 'nomor', text: kelompok(t.npwp, [4, 4, 4, 4]) }),
+      t.permintaan ? [h('dt', { text: 'Billing' }), h('dd', { text: 'diminta ' + t.permintaan + ' · terkirim ' + t.terkirim })] : null,
+      h('dt', { text: 'Uraian' }), h('dd', { style: 'font-weight:400', text: t.uraian })),
+    t.kodeTerkirim.length ? h('div', { class: 'bidang' }, h('span', { class: 'label', text: 'Sudah terkirim' }),
+      h('div', { class: 'daftar-kode' }, t.kodeTerkirim.map(k => h('span', { text: k })))) : null,
+    h('p', { class: 'tip', text: 'Lebih cepat dengan file: kirim PDF kode billing langsung di topik tiket, kalimatnya dibuat otomatis. Formulir ini untuk mengetik kode.' }),
+    wadahEntri,
+    tombolTambah,
+    h('div', { class: 'bidang' }, h('label', { class: 'label', for: 'b-berlaku', text: 'Berlaku sampai (WIB, opsional)' }), iBerlaku,
+      h('p', { class: 'bantuan', text: 'Salin tanggal kedaluwarsa dari dokumen billing. Kosongkan bila belum diketahui; waktu pengiriman bukan waktu penerbitan kode.' })),
+    h('div', { class: 'bidang' }, h('span', { class: 'label', text: 'Pratinjau pesan untuk WP' }),
+      h('div', { class: 'pratinjau' }, h('div', { class: 'gelembung' }, pJudul, pDaftar, pBerlaku,
+        h('div', { class: 'kecil', text: 'Pembayaran melalui bank/pos persepsi, ATM, atau internet/mobile banking. Simpan BPN sebagai bukti setor.' })))),
+    banner,
+    h('div', { class: 'kaki' }, tombol));
+}
+
+/* ---------- mulai ---------- */
+function mulai() {
+  if (!tg || !tg.initData) {
+    render(LAYAR.galat({ pesan: 'Halaman ini dibuka dari Telegram. Silakan buka lewat tombol Layanan di chat KPP.' }));
+    return;
+  }
+  tg.ready();
+  tg.expand();
+  const tema = () => { document.documentElement.dataset.theme = tg.colorScheme === 'dark' ? 'dark' : 'light'; };
+  tema();
+  tg.onEvent('themeChanged', tema);
+  try { tg.setHeaderColor('#0E2A47'); } catch (e) {}
+  if (tg.BackButton) tg.BackButton.onClick(kembali);
+  if (API_URL.indexOf('ISI_') === 0) {
+    render(LAYAR.galat({ pesan: 'Alamat server (API_URL) belum diisi di index.html.' }));
+    return;
+  }
+  const q = new URLSearchParams(location.search);
+  const mode = q.get('mode') || (tg.initDataUnsafe && tg.initDataUnsafe.start_param) || 'home';
+
+  // Petugas: langsung buka formulir billing tanpa memuat data WP
+  if (mode.indexOf('b_') === 0) {
+    S.data = { kantor: {}, layanan: [], faq: [], syarat: [], tiketSaya: [] };
+    S.riwayat = [{ layar: 'billing', arg: mode.slice(2) }];
+    tampil();
+    return;
+  }
+  // Petugas: konsol (daftar antrean seperti daftar chat)
+  if (mode === 'konsol' || mode.indexOf('k_') === 0) {
+    S.data = { kantor: {}, layanan: [], faq: [], syarat: [], tiketSaya: [] };
+    S.riwayat = [{ layar: 'konsol' }].concat(mode.indexOf('k_') === 0 ? [{ layar: 'konsolTiket', arg: mode.slice(2) }] : []);
+    try { tg.setHeaderColor('#0E2A47'); } catch (e) {}
+    tampil();
+    return;
+  }
+
+  const rute = mode.indexOf('n_') === 0 ? [{ layar: 'home' }, { layar: 'nilai', arg: mode.slice(2) }]
+    : ['form', 'info', 'syarat', 'status', 'kalkulator'].indexOf(mode) >= 0 ? [{ layar: 'home' }, { layar: mode }] : [{ layar: 'home' }];
+  const simpanan = bacaSimpanan();
+  if (simpanan) {
+    // tampil seketika memakai data umum yang tersimpan, data terbaru menyusul
+    S.data = Object.assign({ tiketSaya: [], profil: null, perluIzinTulis: true }, simpanan);
+    S.riwayat = rute;
+    tampil();
+  } else {
+    render(layarMemuat());
+  }
+  S.janjiAwal = api('awal', { mode: mode }).then(r => {
+    S.janjiAwal = null;
+    if (!r.ok) { S.dataSegar = false; render(LAYAR.galat({ pesan: r.pesan, ulang: true })); return; }
+    S.data = r;
+    S.dataSegar = true;
+    simpanUmum(r);
+    if (!simpanan) { S.riwayat = rute; tampil(); return; }
+    const cur = S.riwayat[S.riwayat.length - 1].layar;
+    if (cur === 'home' || cur === 'status' || (cur === 'form' && r.jam && r.jam.buka === false)) tampil();
+    else if (S.saatSegar) S.saatSegar(r);
+  }).catch(() => {
+    S.janjiAwal = null;
+    if (!simpanan) render(LAYAR.galat({ pesan: 'Tidak dapat terhubung ke server. Periksa koneksi internet lalu coba lagi.', ulang: true }));
+  });
+}
+mulai();
+</script>
+</body>
+</html>
