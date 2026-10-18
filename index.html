@@ -42,8 +42,8 @@ p { margin: 0; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- pita merek (beranda) ---------- */
-.pita { margin: 0 -16px; padding: 18px 20px 58px; background: var(--merek); color: #FFFFFF; border-bottom: 3px solid var(--emas); }
-.kop { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+.pita { margin: 0 -16px; padding: 16px 20px 50px; background: var(--merek); color: #FFFFFF; border-bottom: 3px solid var(--emas); }
+.kop { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
 .logo-baris { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .logo { height: 56px; min-width: 56px; padding: 4px; border-radius: 14px; background: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; }
 .logo img { height: 48px; width: auto; max-width: 132px; object-fit: contain; display: block; border-radius: 10px; }
@@ -51,8 +51,8 @@ p { margin: 0; }
 .kop-teks b { font-size: 17px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.2px; line-height: 1.2; }
 .kop-teks span { font-size: 13px; color: #C9D6E3; line-height: 1.3; }
 .monogram { width: 56px; height: 56px; border-radius: 12px; background: rgba(255,255,255,.1); color: var(--emas); display: grid; place-items: center; font-weight: 800; font-size: 14px; letter-spacing: .5px; }
-.salam { font-size: 14px; color: #C9D6E3; }
-.salam b { display: block; font-size: 24px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.3px; margin-top: 2px; }
+.salam { font-size: 15px; color: #C9D6E3; margin: 0; }
+.salam b { font-size: 18px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.2px; margin-left: 4px; }
 .kantor { margin-top: 10px; font-size: 14px; font-weight: 600; color: #E3EBF4; display: flex; align-items: center; gap: 8px; }
 .kantor::before { content: ''; width: 18px; height: 2px; background: var(--emas); border-radius: 2px; }
 
@@ -93,6 +93,37 @@ p { margin: 0; }
 .rinci dt { color: var(--teks-2); }
 .rinci dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 
+/* ---------- tombol utama ambil antrean ---------- */
+.cta { position: relative; display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; border-radius: 18px; text-align: left; cursor: pointer;
+  background: var(--permukaan); border: 2px solid var(--emas); box-shadow: 0 10px 24px rgba(14, 42, 71, .16); }
+.cta .lingkar-ik { width: 52px; height: 52px; border-radius: 14px; background: var(--emas); color: var(--merek); display: grid; place-items: center; flex-shrink: 0; }
+.cta .lingkar-ik .ik { width: 26px; height: 26px; }
+.cta b { display: block; font-size: 17px; font-weight: 800; letter-spacing: -0.2px; }
+.cta small { display: block; font-size: 13px; color: var(--teks-2); line-height: 1.4; margin-top: 2px; }
+.cta .panah { margin-left: auto; width: 34px; height: 34px; border-radius: 17px; background: var(--rona); color: var(--rona-teks); display: grid; place-items: center; flex-shrink: 0; }
+.cta:active { transform: scale(.99); }
+.cta.timpa { margin-top: -38px; }
+.ubin-baris { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ubin-baris .ubin { flex-direction: row; min-height: 64px; padding: 10px 12px; gap: 10px; align-items: center; justify-content: flex-start; text-align: left; }
+.ubin-baris .ubin .lingkar-ik { width: 38px; height: 38px; flex-shrink: 0; }
+.ubin-baris .ubin b { font-size: 14px; line-height: 1.25; }
+.ubin-baris .lencana-ubin { top: 50%; transform: translateY(-50%); right: 10px; }
+
+/* kalkulator */
+.kalk-hasil { display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 16px; background: var(--emas-lembut); }
+.kalk-hasil .besar { font-size: 26px; font-weight: 800; letter-spacing: -0.3px; color: var(--teks); font-variant-numeric: tabular-nums; }
+.kalk-hasil dl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; margin: 4px 0 0; font-size: 14px; }
+.kalk-hasil dt { color: var(--teks-2); }
+.kalk-hasil dd { margin: 0; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kalk-catatan { font-size: 13px; color: var(--teks-2); line-height: 1.5; display: flex; flex-direction: column; gap: 4px; }
+
+/* penilaian */
+.bintang-baris { display: flex; justify-content: center; gap: 6px; }
+.bintang-baris button { width: 54px; height: 54px; border-radius: 14px; border: 1px solid var(--garis); background: var(--permukaan); font-size: 28px; line-height: 1; cursor: pointer; color: var(--garis); }
+.bintang-baris button[aria-checked="true"], .bintang-baris button.nyala { color: var(--emas); border-color: var(--emas); background: var(--emas-lembut); }
+.label-nilai { text-align: center; font-weight: 700; min-height: 22px; }
+@media (prefers-reduced-motion: reduce) { .cta:active { transform: none; } }
+
 /* ---------- ubin menu ---------- */
 .ubin-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .ubin { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; min-height: 118px; padding: 14px; border-radius: 16px;
@@ -125,12 +156,13 @@ p { margin: 0; }
 .sorot .item-judul { font-size: 14px; }
 
 .kontak { display: flex; flex-direction: column; gap: 12px; font-size: 14px; }
-.medsos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.medsos button { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px; border-radius: 14px; border: 1px solid var(--garis); background: var(--permukaan); text-align: left; cursor: pointer; }
-.medsos .lingkar-ik { width: 34px; height: 34px; border-radius: 10px; background: var(--rona); color: var(--rona-teks); display: grid; place-items: center; flex-shrink: 0; }
-.medsos .lingkar-ik .ik { width: 18px; height: 18px; }
-.medsos b { display: block; font-size: 13px; }
-.medsos small { display: block; font-size: 12px; color: var(--teks-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.medsos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.medsos button { display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 96px; padding: 12px 6px; border-radius: 14px; border: 1px solid var(--garis); background: var(--permukaan); text-align: center; cursor: pointer; min-width: 0; }
+.medsos .logo-medsos { width: 40px; height: 40px; border-radius: 12px; object-fit: contain; display: block; }
+.medsos .lingkar-ik { width: 40px; height: 40px; border-radius: 12px; background: var(--rona); color: var(--rona-teks); display: grid; place-items: center; }
+.medsos .lingkar-ik .ik { width: 20px; height: 20px; }
+.medsos b { display: block; font-size: 12px; line-height: 1.25; }
+.medsos small { display: block; max-width: 100%; font-size: 11px; color: var(--teks-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .aksi-karcis { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .tombol-kecil { min-height: 40px; padding: 0 14px; border-radius: 12px; font-size: 13px; }
 .kontak-baris { display: flex; gap: 10px; align-items: flex-start; }
@@ -256,12 +288,14 @@ const LOGO = [
   { src: 'logo-djp.png', alt: 'Logo Direktorat Jenderal Pajak' },
 ];
 // ===== Media sosial KPP (sumber: halaman kantor di pajak.go.id); ubah bila perlu =====
+// logo: nama file gambar logo platform yang diunggah ke repo (bila belum ada, tampil ikon umum)
 const MEDSOS = [
-  { nama: 'Instagram', akun: '@pajaksbyrungkut', url: 'https://www.instagram.com/pajaksbyrungkut', ikon: 'kamera' },
-  { nama: 'X (Twitter)', akun: '@pajaksbyrungkut', url: 'https://x.com/pajaksbyrungkut', ikon: 'pesan' },
-  { nama: 'Channel Telegram', akun: '@infopajaksbyrungkut', url: 'https://t.me/infopajaksbyrungkut', ikon: 'siaran' },
-  { nama: 'YouTube', akun: 'Pajak Surabaya Rungkut', url: 'https://www.youtube.com/results?search_query=Pajak+Surabaya+Rungkut', ikon: 'putar' },
-  { nama: 'Facebook', akun: 'KPP Pratama Surabaya Rungkut', url: 'https://www.facebook.com/search/top?q=KPP%20Pratama%20Surabaya%20Rungkut', ikon: 'orang' },
+  { nama: 'Instagram', akun: '@pajaksbyrungkut', url: 'https://www.instagram.com/pajaksbyrungkut', logo: 'medsos-instagram.png', ikon: 'kamera' },
+  { nama: 'TikTok', akun: '@pajaksbyrungkut', url: 'https://www.tiktok.com/@pajaksbyrungkut', logo: 'medsos-tiktok.png', ikon: 'klip' }, // periksa: akun TikTok belum tercantum di halaman resmi
+  { nama: 'YouTube', akun: 'Pajak Surabaya Rungkut', url: 'https://www.youtube.com/results?search_query=Pajak+Surabaya+Rungkut', logo: 'medsos-youtube.png', ikon: 'putar' },
+  { nama: 'Facebook', akun: 'KPP Pratama Surabaya Rungkut', url: 'https://www.facebook.com/search/top?q=KPP%20Pratama%20Surabaya%20Rungkut', logo: 'medsos-facebook.png', ikon: 'orang' },
+  { nama: 'X', akun: '@pajaksbyrungkut', url: 'https://x.com/pajaksbyrungkut', logo: 'medsos-x.png', ikon: 'pesan' },
+  { nama: 'Channel Telegram', akun: '@infopajaksbyrungkut', url: 'https://t.me/infopajaksbyrungkut', logo: 'medsos-telegram.png', ikon: 'siaran' },
 ];
 // ===========================================================
 
@@ -291,8 +325,10 @@ const IKON = {
   kamera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
   pesan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"/></svg>',
   siaran: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>',
+  klip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 9.5l4 2.5-4 2.5z"/></svg>',
   putar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/></svg>',
   orang: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.5A5 5 0 0 1 21 19"/></svg>',
+  kalkulator: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M8.5 6.5h7"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h.01M15.5 18h.01"/></svg>',
   bintang: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg>',
 };
 
@@ -449,11 +485,21 @@ LAYAR.home = function () {
       h('span', { class: 'lingkar', style: 'width:40px;height:40px;background:var(--rona);color:var(--rona-teks)' }, ikon('chat')),
       h('span', { class: 'item-isi' }, h('span', { class: 'item-judul', text: 'Chat dengan @' + d.akunKantor.username }), h('span', { class: 'kecil', text: 'Agar balasan petugas tersimpan di chat resmi KPP.' })),
       h('span', { class: 'panah' }, ikon('panah'))) : null,
-    h('nav', { class: 'ubin-grid', 'aria-label': 'Pilih layanan', style: aktif || d.akunKantorSendiri || (d.lewatKantor && !d.chatKantorAktif && d.akunKantor) ? '' : 'margin-top:-40px' },
-      ubin('antrean', 'Ambil antrean', 'Isi formulir dan nomor antrean layanan', () => buka('form'), true),
-      ubin('info', 'Info pajak', 'Ringkasan peraturan terbaru', () => buka('info')),
-      ubin('syarat', 'Persyaratan', 'Dokumen tiap permohonan', () => buka('syarat')),
-      ubin('status', 'Antrean saya', d.tiketSaya.length ? 'Lihat posisi antrean' : 'Cek posisi atau batalkan', () => buka('status'), false, d.tiketSaya.length)),
+    !aktif && d.jam && d.jam.buka === false && !d.akunKantorSendiri ? h('div', { class: 'banner banner-awas', style: (d.lewatKantor && !d.chatKantorAktif && d.akunKantor) ? '' : 'margin-top:-38px;position:relative' },
+      h('b', { text: '⏰ ' + d.jam.alasan + '. ' }), 'Antrean dibuka kembali ' + d.jam.berikutnya + '. Info pajak, persyaratan, dan kalkulator tetap bisa dipakai.') : null,
+    h('button', { class: 'cta' + (aktif || d.akunKantorSendiri || (d.jam && d.jam.buka === false) || (d.lewatKantor && !d.chatKantorAktif && d.akunKantor) ? '' : ' timpa'), onClick: () => buka('form') },
+      h('span', { class: 'lingkar-ik' }, ikon('antrean')),
+      h('span', { style: 'min-width:0' }, h('b', { text: 'Ambil antrean' }), h('small', { text: 'Isi formulir dan nomor antrean layanan' })),
+      h('span', { class: 'panah', 'aria-hidden': 'true' }, ikon('panah'))),
+    !aktif && d.nilaiTertunda ? h('button', { class: 'sorot', onClick: () => buka('nilai', d.nilaiTertunda.kunci) },
+      h('span', { class: 'lingkar', style: 'width:40px;height:40px;background:var(--emas);color:var(--merek)' }, ikon('bintang')),
+      h('span', { class: 'item-isi' }, h('span', { class: 'item-judul', text: 'Beri penilaian untuk ' + d.nilaiTertunda.id }), h('span', { class: 'kecil', text: 'Bagaimana layanan ' + d.nilaiTertunda.layanan + ' yang Anda terima?' })),
+      h('span', { class: 'panah' }, ikon('panah'))) : null,
+    h('nav', { class: 'ubin-baris', 'aria-label': 'Menu lainnya' },
+      ubin('info', 'Info pajak', '', () => buka('info')),
+      ubin('syarat', 'Persyaratan', '', () => buka('syarat')),
+      ubin('kalkulator', 'Kalkulator pajak', '', () => buka('kalkulator')),
+      ubin('status', 'Antrean saya', '', () => buka('status'), false, d.tiketSaya.length)),
     terbaru.length ? h('div', { class: 'judul-bagian' }, h('h3', { text: 'Informasi terbaru' })) : null,
     terbaru.map(f => h('button', { class: 'sorot', onClick: () => buka('faq', f) },
       h('span', { class: 'lingkar', style: 'width:40px;height:40px;background:var(--emas);color:var(--merek)' }, ikon('bintang')),
@@ -465,10 +511,17 @@ LAYAR.home = function () {
       barisKontak('jam', k.jam ? 'Jam layanan: ' + k.jam : ''),
       barisKontak('telepon', k.telepon)),
     MEDSOS.length ? h('div', { class: 'judul-bagian' }, h('h3', { text: 'Media sosial KPP Rungkut' })) : null,
-    MEDSOS.length ? h('nav', { class: 'medsos', 'aria-label': 'Media sosial' }, MEDSOS.map(m => h('button', { onClick: () => bukaMedsos(m.url) },
-      h('span', { class: 'lingkar-ik' }, ikon(m.ikon)),
-      h('span', { style: 'min-width:0' }, h('b', { text: m.nama }), h('small', { text: m.akun }))))) : null);
+    MEDSOS.length ? h('nav', { class: 'medsos', 'aria-label': 'Media sosial' }, MEDSOS.map(m => h('button', { onClick: () => bukaMedsos(m.url), 'aria-label': m.nama + ' ' + m.akun },
+      logoMedsos(m), h('b', { text: m.nama }), h('small', { text: m.akun })))) : null);
 };
+function logoMedsos(m) {
+  // logo platform dari file di repo; bila file belum ada, tampil ikon umum
+  const cadangan = h('span', { class: 'lingkar-ik', 'aria-hidden': 'true' }, ikon(m.ikon));
+  if (!m.logo) return cadangan;
+  const img = h('img', { class: 'logo-medsos', src: m.logo, alt: '', decoding: 'async' });
+  img.addEventListener('error', () => img.replaceWith(cadangan));
+  return img;
+}
 function bukaMedsos(url) {
   if (/^https:\/\/t\.me\//.test(url) && tg && tg.openTelegramLink) { try { tg.openTelegramLink(url); return; } catch (e) {} }
   bukaTautan(url);
@@ -477,8 +530,232 @@ function ubin(ik, judul, ket, aksi, utama, jumlah) {
   return h('button', { class: 'ubin' + (utama ? ' utama' : ''), onClick: aksi },
     h('span', { class: 'lingkar-ik' }, ikon(ik)),
     jumlah ? h('span', { class: 'lencana-ubin', 'aria-label': jumlah + ' antrean aktif', text: String(jumlah) }) : null,
-    h('span', null, h('b', { text: judul }), h('small', { text: ket })));
+    h('span', null, h('b', { text: judul }), ket ? h('small', { text: ket }) : null));
 }
+
+/* ---------- penilaian layanan ---------- */
+LAYAR.nilai = function (kunci) {
+  const d = S.data;
+  const info = (d.nilaiTiket && d.nilaiTiket.kunci === kunci) ? d.nilaiTiket
+    : (d.nilaiTertunda && d.nilaiTertunda.kunci === kunci) ? Object.assign({ status: 'Selesai', nilai: 0 }, d.nilaiTertunda) : null;
+  if (!info) {
+    if (!S.dataSegar) { S.saatSegar = () => gantiDengan('nilai', kunci); return layarMemuat(); }
+    return h('main', { class: 'layar' }, kepala('Penilaian layanan'),
+      h('div', { class: 'banner banner-awas', text: 'Antrean tidak ditemukan atau bukan milik akun Telegram ini.' }),
+      h('button', { class: 'tombol tombol-utama lebar', onClick: keBeranda }, 'Ke beranda'));
+  }
+  if (info.nilai) {
+    return h('main', { class: 'layar' }, kepala('Penilaian layanan'),
+      h('section', { class: 'kartu', style: 'text-align:center;display:flex;flex-direction:column;gap:8px;padding:24px 18px' },
+        h('div', { style: 'font-size:30px;color:var(--emas)', text: '★★★★★'.slice(0, info.nilai) + '☆☆☆☆☆'.slice(0, 5 - info.nilai) }),
+        h('p', { text: 'Anda sudah memberi penilaian untuk ' + info.id + '. Terima kasih!' })),
+      h('button', { class: 'tombol tombol-utama lebar', onClick: keBeranda }, 'Ke beranda'));
+  }
+  if (info.status !== 'Selesai') {
+    return h('main', { class: 'layar' }, kepala('Penilaian layanan'),
+      h('div', { class: 'banner banner-awas', text: 'Penilaian bisa diberikan setelah layanan ' + info.id + ' selesai.' }),
+      h('button', { class: 'tombol tombol-utama lebar', onClick: keBeranda }, 'Ke beranda'));
+  }
+  const label = ['', 'Sangat kurang', 'Kurang', 'Cukup', 'Baik', 'Sangat baik'];
+  let nilai = 0;
+  const teksLabel = h('p', { class: 'label-nilai', 'aria-live': 'polite' });
+  const tombolBintang = [1, 2, 3, 4, 5].map(n => h('button', { type: 'button', role: 'radio', 'aria-checked': 'false', 'aria-label': n + ' bintang, ' + label[n], text: '★',
+    onClick: () => { nilai = n; tombolBintang.forEach((b, i) => { b.classList.toggle('nyala', i < n); b.setAttribute('aria-checked', String(i === n - 1)); }); teksLabel.textContent = label[n]; try { tg.HapticFeedback.selectionChanged(); } catch (e) {} kirim.disabled = false; } }));
+  const komentar = h('textarea', { class: 'isian', id: 'f-komentar', rows: 3, maxlength: 500, placeholder: 'Contoh: petugas ramah, tapi menunggu agak lama.' });
+  const galat = h('div', { role: 'alert' });
+  const kirim = h('button', { class: 'tombol tombol-utama lebar', disabled: true, onClick: async () => {
+    kirim.disabled = true; kirim.textContent = 'Mengirim…'; galat.replaceChildren();
+    try {
+      const r = await api('nilai', { kunci: kunci, nilai: nilai, komentar: komentar.value });
+      if (!r.ok) throw new Error(r.pesan || 'Gagal mengirim penilaian.');
+      getar('success');
+      if (S.data.nilaiTertunda && S.data.nilaiTertunda.kunci === kunci) S.data.nilaiTertunda = null;
+      S.data.nilaiTiket = Object.assign({}, info, { nilai: nilai });
+      render(h('main', { class: 'layar' }, kepala('Terima kasih!'),
+        h('section', { class: 'kartu', style: 'text-align:center;display:flex;flex-direction:column;gap:8px;padding:24px 18px' },
+          h('div', { style: 'font-size:30px;color:var(--emas)', text: '★★★★★'.slice(0, nilai) + '☆☆☆☆☆'.slice(0, 5 - nilai) }),
+          h('p', { text: 'Penilaian Anda membantu kami memperbaiki layanan.' })),
+        h('button', { class: 'tombol tombol-utama lebar', onClick: () => tg.close() }, 'Selesai'),
+        h('button', { class: 'tombol tombol-garis lebar', onClick: keBeranda }, 'Ke beranda')));
+    } catch (e) {
+      getar('error');
+      galat.replaceChildren(h('div', { class: 'banner banner-galat', text: e.message }));
+      kirim.disabled = false; kirim.textContent = 'Kirim penilaian';
+    }
+  } }, 'Kirim penilaian');
+  return h('main', { class: 'layar' },
+    kepala('Bagaimana layanan kami?', info.id + ' · ' + info.layanan),
+    h('section', { class: 'kartu', style: 'display:flex;flex-direction:column;gap:12px' },
+      h('div', { class: 'bintang-baris', role: 'radiogroup', 'aria-label': 'Nilai 1 sampai 5' }, tombolBintang),
+      teksLabel,
+      h('label', { for: 'f-komentar', class: 'kecil', text: 'Saran atau komentar (opsional)' }),
+      komentar),
+    galat, kirim,
+    h('p', { class: 'kecil', style: 'text-align:center', text: 'Penilaian dibaca oleh tim layanan KPP.' }));
+};
+
+/* ---------- kalkulator pajak ---------- */
+const TER = {
+  // Lampiran PP 58/2023: batas atas penghasilan bruto bulanan (Rp) dan tarif (%)
+  A: [[5400000, 0], [5650000, 0.25], [5950000, 0.5], [6300000, 0.75], [6750000, 1], [7500000, 1.25], [8550000, 1.5], [9650000, 1.75], [10050000, 2], [10350000, 2.25], [10700000, 2.5], [11050000, 3], [11600000, 3.5], [12500000, 4], [13750000, 5], [15100000, 6], [16950000, 7], [19750000, 8], [24150000, 9], [26450000, 10], [28000000, 11], [30050000, 12], [32400000, 13], [35400000, 14], [39100000, 15], [43850000, 16], [47800000, 17], [51400000, 18], [56300000, 19], [62200000, 20], [68600000, 21], [77500000, 22], [89000000, 23], [103000000, 24], [125000000, 25], [157000000, 26], [206000000, 27], [337000000, 28], [454000000, 29], [550000000, 30], [695000000, 31], [910000000, 32], [1400000000, 33], [Infinity, 34]],
+  B: [[6200000, 0], [6500000, 0.25], [6850000, 0.5], [7300000, 0.75], [9200000, 1], [10750000, 1.5], [11250000, 2], [11600000, 2.5], [12600000, 3], [13600000, 4], [14950000, 5], [16400000, 6], [18450000, 7], [21850000, 8], [26000000, 9], [27700000, 10], [29350000, 11], [31450000, 12], [33950000, 13], [37100000, 14], [41100000, 15], [45800000, 16], [49500000, 17], [53800000, 18], [58500000, 19], [64000000, 20], [71000000, 21], [80000000, 22], [93000000, 23], [109000000, 24], [129000000, 25], [163000000, 26], [211000000, 27], [374000000, 28], [459000000, 29], [555000000, 30], [704000000, 31], [957000000, 32], [1405000000, 33], [Infinity, 34]],
+  C: [[6600000, 0], [6950000, 0.25], [7350000, 0.5], [7800000, 0.75], [8850000, 1], [9800000, 1.25], [10950000, 1.5], [11200000, 1.75], [12050000, 2], [12950000, 3], [14150000, 4], [15550000, 5], [17050000, 6], [19500000, 7], [22700000, 8], [26600000, 9], [28100000, 10], [30100000, 11], [32600000, 12], [35400000, 13], [38900000, 14], [43000000, 15], [47400000, 16], [51200000, 17], [55800000, 18], [60400000, 19], [66700000, 20], [74500000, 21], [83200000, 22], [95600000, 23], [110000000, 24], [134000000, 25], [169000000, 26], [221000000, 27], [390000000, 28], [463000000, 29], [561000000, 30], [709000000, 31], [965000000, 32], [1419000000, 33], [Infinity, 34]],
+};
+const KATEGORI_PTKP = { 'TK/0': 'A', 'TK/1': 'A', 'K/0': 'A', 'TK/2': 'B', 'TK/3': 'B', 'K/1': 'B', 'K/2': 'B', 'K/3': 'C' };
+function tarifTer(kategori, bruto) { const t = TER[kategori].find(x => bruto <= x[0]); return t ? t[1] : 34; }
+function rp(n) { return 'Rp' + Math.floor(Math.max(0, n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function persen(n) { return String(n).replace('.', ',') + '%'; }
+
+function isianRupiah(id, label, bantuan, saatUbah) {
+  const input = h('input', { class: 'isian', id: id, type: 'text', inputmode: 'numeric', autocomplete: 'off', placeholder: 'Rp0' });
+  input.addEventListener('input', () => {
+    const d = digit(input.value).replace(/^0+(?=\d)/, '');
+    input.value = d ? rupiah(d) : '';
+    saatUbah();
+  });
+  return { nilai: () => Number(digit(input.value) || 0), el: h('div', { class: 'bidang' }, h('label', { class: 'label', for: id, text: label }), bantuan ? h('p', { class: 'kecil', text: bantuan }) : null, input) };
+}
+function pilihan(id, label, opsi, saatUbah) {
+  const sel = h('select', { class: 'isian', id: id }, opsi.map(o => h('option', { value: o[0], text: o[1] })));
+  sel.addEventListener('change', saatUbah);
+  return { nilai: () => sel.value, el: h('div', { class: 'bidang' }, h('label', { class: 'label', for: id, text: label }), sel) };
+}
+function kotakHasil(judul) {
+  const besar = h('div', { class: 'besar', text: 'Rp0' });
+  const dl = h('dl');
+  const el = h('section', { class: 'kalk-hasil', 'aria-live': 'polite' }, h('span', { class: 'kecil', text: judul }), besar, dl);
+  return { el: el, isi: (jumlah, rincian) => { besar.textContent = rp(jumlah); dl.replaceChildren(...[].concat(...rincian.map(r => [h('dt', { text: r[0] }), h('dd', { text: r[1] })]))); } };
+}
+function catatanKalk(baris) { return h('div', { class: 'kalk-catatan' }, baris.map(t => h('p', { text: t }))); }
+
+const KALKULATOR = {
+  umkm: {
+    nama: 'UMKM 0,5%',
+    buat() {
+      const hasil = kotakHasil('PPh final terutang bulan ini');
+      const hitung = () => {
+        const op = jenis.nilai() === 'op';
+        const omzet = omzetIni.nilai();
+        const sebelum = op ? omzetLalu.nilai() : 0;
+        const bebas = op ? Math.max(0, 500000000 - sebelum) : 0;
+        const dasar = Math.max(0, omzet - bebas);
+        hasil.isi(dasar * 0.005, [['Omzet bulan ini', rp(omzet)]].concat(op ? [['Sisa omzet bebas pajak (Rp500 juta setahun)', rp(Math.min(bebas, omzet))]] : []).concat([['Omzet yang dikenai pajak', rp(dasar)], ['Tarif', '0,5%']]));
+        peringatan.hidden = !(sebelum + omzet > 4800000000);
+      };
+      const jenis = pilihan('k-jenis', 'Jenis wajib pajak', [['op', 'Orang pribadi'], ['badan', 'Badan (perseroan perorangan, koperasi, dll.)']], () => { omzetLalu.el.hidden = jenis.nilai() !== 'op'; hitung(); });
+      const omzetIni = isianRupiah('k-omzet', 'Omzet (peredaran bruto) bulan ini', '', () => hitung());
+      const omzetLalu = isianRupiah('k-omzet-lalu', 'Total omzet sejak Januari sampai bulan lalu', 'Untuk orang pribadi: omzet Rp500 juta pertama dalam setahun tidak dikenai PPh.', () => hitung());
+      const peringatan = h('div', { class: 'banner banner-awas', hidden: true, text: 'Omzet setahun sudah melebihi Rp4,8 miliar, sehingga tarif 0,5% tidak berlaku lagi. Silakan konsultasikan dengan petugas.' });
+      hitung();
+      return [jenis.el, omzetIni.el, omzetLalu.el, hasil.el, peringatan, catatanKalk([
+        'Disetor paling lambat tanggal 15 bulan berikutnya dengan kode akun pajak 411128 dan kode jenis setoran 420.',
+        'Berlaku untuk omzet tidak lebih dari Rp4,8 miliar setahun (PP 55/2022 s.t.d.d. PP 20/2026).',
+      ])];
+    },
+  },
+  pph21: {
+    nama: 'PPh 21 karyawan',
+    buat() {
+      const hasil = kotakHasil('PPh 21 dipotong sebulan');
+      const hitung = () => {
+        const bruto = gaji.nilai();
+        const kat = KATEGORI_PTKP[ptkp.nilai()];
+        const tarif = tarifTer(kat, bruto);
+        hasil.isi(bruto * tarif / 100, [['Penghasilan bruto', rp(bruto)], ['Kategori TER', kat], ['Tarif efektif', persen(tarif)]]);
+      };
+      const gaji = isianRupiah('k-gaji', 'Penghasilan bruto sebulan', 'Gaji, tunjangan, lembur, dan penghasilan lain yang diterima bulan itu.', () => hitung());
+      const ptkp = pilihan('k-ptkp', 'Status PTKP', Object.keys(KATEGORI_PTKP).sort().map(k => [k, k + (k[0] === 'K' ? ' (kawin, ' : ' (tidak kawin, ') + k.split('/')[1] + ' tanggungan)']), () => hitung());
+      hitung();
+      return [gaji.el, ptkp.el, hasil.el, catatanKalk([
+        'Untuk pegawai tetap pada masa Januari–November. Pada masa pajak terakhir (umumnya Desember), PPh 21 setahun dihitung ulang dengan tarif Pasal 17 UU PPh.',
+        'Tarif efektif rata-rata sesuai Lampiran PP 58/2023.',
+      ])];
+    },
+  },
+  ppn: {
+    nama: 'PPN',
+    buat() {
+      const hasil = kotakHasil('PPN');
+      const hitung = () => {
+        const umum = jenis.nilai() === 'umum';
+        const harga = nilai.nilai();
+        const termasuk = cara.nilai() === 'termasuk';
+        const efektif = umum ? 0.11 : 0.12;
+        const dasar = termasuk ? Math.round(harga / (1 + efektif)) : harga;
+        const ppn = termasuk ? harga - dasar : Math.floor(dasar * efektif);
+        const rinci = [['Harga sebelum PPN', rp(dasar)]];
+        if (umum) rinci.push(['DPP nilai lain (11/12)', rp(dasar * 11 / 12)]);
+        rinci.push(['Tarif PPN', '12%'], ['Harga termasuk PPN', rp(dasar + ppn)]);
+        hasil.isi(ppn, rinci);
+      };
+      const jenis = pilihan('k-ppn-jenis', 'Jenis penyerahan', [['umum', 'Barang/jasa umum (bukan barang mewah)'], ['mewah', 'Barang mewah (objek PPnBM)']], () => hitung());
+      const cara = pilihan('k-ppn-cara', 'Harga yang dimasukkan', [['belum', 'Belum termasuk PPN'], ['termasuk', 'Sudah termasuk PPN']], () => hitung());
+      const nilai = isianRupiah('k-harga', 'Harga', '', () => hitung());
+      hitung();
+      return [jenis.el, cara.el, nilai.el, hasil.el, catatanKalk([
+        'Barang/jasa umum: PPN 12% × DPP nilai lain 11/12 dari harga, sehingga bebannya setara 11%. Barang mewah: 12% dari harga penuh (PMK 131/2024).',
+      ])];
+    },
+  },
+  sewa: {
+    nama: 'Sewa tanah/bangunan',
+    buat() {
+      const hasil = kotakHasil('PPh final 10%');
+      const hitung = () => { const n = nilai.nilai(); hasil.isi(n * 0.1, [['Nilai sewa bruto', rp(n)], ['Tarif', '10%']]); };
+      const nilai = isianRupiah('k-sewa', 'Nilai sewa (bruto)', 'Jumlah yang dibayar penyewa, termasuk biaya layanan yang dibayar bersama sewa.', () => hitung());
+      hitung();
+      return [nilai.el, hasil.el, catatanKalk([
+        'Dipotong oleh penyewa bila penyewa ditunjuk sebagai pemotong pajak; bila tidak, disetor sendiri oleh pemilik.',
+        'Kode akun pajak 411128, kode jenis setoran 403 (PP 34/2017).',
+      ])];
+    },
+  },
+  phtb: {
+    nama: 'Jual tanah/bangunan',
+    buat() {
+      const hasil = kotakHasil('PPh final pengalihan');
+      const hitung = () => { const n = nilai.nilai(); const t = Number(jenis.nilai()); hasil.isi(n * t / 100, [['Nilai pengalihan', rp(n)], ['Tarif', persen(t)]]); };
+      const jenis = pilihan('k-phtb', 'Jenis pengalihan', [['2.5', 'Umum (2,5%)'], ['1', 'Rumah sederhana/rusun sederhana oleh pengembang (1%)'], ['0', 'Kepada pemerintah untuk kepentingan umum (0%)']], () => hitung());
+      const nilai = isianRupiah('k-nilai-phtb', 'Nilai pengalihan (harga jual)', '', () => hitung());
+      hitung();
+      return [jenis.el, nilai.el, hasil.el, catatanKalk([
+        'Kode akun pajak 411128, kode jenis setoran 402. Setelah disetor, ajukan penelitian (validasi) bukti setor lewat Coretax (PP 34/2016).',
+      ])];
+    },
+  },
+  denda: {
+    nama: 'Denda telat lapor',
+    buat() {
+      const hasil = kotakHasil('Total denda');
+      const tarif = { ppn: 500000, masa: 100000, badan: 1000000, op: 100000 };
+      const hitung = () => { const n = Math.max(1, Number(digit(jumlah.value) || 1)); const per = tarif[jenis.nilai()]; hasil.isi(per * n, [['Denda per SPT', rp(per)], ['Jumlah SPT terlambat', String(n)]]); };
+      const jenis = pilihan('k-spt', 'Jenis SPT', [['op', 'SPT Tahunan PPh orang pribadi'], ['badan', 'SPT Tahunan PPh badan'], ['ppn', 'SPT Masa PPN'], ['masa', 'SPT Masa lainnya']], () => hitung());
+      const jumlah = h('input', { class: 'isian', id: 'k-jml', type: 'number', inputmode: 'numeric', min: 1, value: 1 });
+      jumlah.addEventListener('input', hitung);
+      hitung();
+      return [jenis.el, h('div', { class: 'bidang' }, h('label', { class: 'label', for: 'k-jml', text: 'Jumlah SPT yang terlambat' }), jumlah), hasil.el, catatanKalk([
+        'Denda keterlambatan penyampaian SPT sesuai Pasal 7 ayat (1) UU KUP.',
+        'Keterlambatan bayar dikenai sanksi bunga per bulan sesuai tarif yang ditetapkan Menteri Keuangan setiap bulan. Cek juga fasilitas penghapusan sanksi 2026 di Info pajak.',
+      ])];
+    },
+  },
+};
+
+LAYAR.kalkulator = function (pilih) {
+  let aktif = pilih && KALKULATOR[pilih] ? pilih : 'umkm';
+  const isi = h('section', { class: 'kartu', style: 'display:flex;flex-direction:column;gap:14px' });
+  const tab = h('div', { class: 'chip-gulir', role: 'tablist', 'aria-label': 'Jenis kalkulator' });
+  const tampilkan = () => {
+    tab.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === aktif)));
+    isi.replaceChildren(...KALKULATOR[aktif].buat());
+  };
+  Object.keys(KALKULATOR).forEach(k => tab.append(h('button', { type: 'button', class: 'chip', 'data-k': k, role: 'tab', text: KALKULATOR[k].nama, onClick: () => { aktif = k; tampilkan(); } })));
+  tampilkan();
+  return h('main', { class: 'layar' },
+    kepala('Kalkulator pajak', 'Perkiraan sederhana. Untuk kepastian, tanyakan petugas.'),
+    tab, isi,
+    h('button', { class: 'tombol tombol-kedua lebar', onClick: () => buka('form', { layanan: kodeLayanan('K'), uraian: 'Pertanyaan tentang perhitungan pajak\n' }) }, 'Tanya petugas'));
+};
 
 /* ---------- formulir antrean ---------- */
 LAYAR.form = function (arg) {
@@ -491,6 +768,19 @@ LAYAR.form = function (arg) {
         'Telegram mengenali siapa yang menekan tombol, jadi antrean akan tercatat atas nama akun kantor dan balasannya masuk ke chat bot. ',
         'Untuk menguji sebagai wajib pajak, buka chat akun kantor dari akun Telegram lain, lalu tekan Ambil antrean dari sana.'),
       h('button', { class: 'tombol tombol-garis lebar', onClick: () => tg.close() }, 'Tutup'));
+  }
+  if (!aktif && d.jam && d.jam.buka === false) {
+    return h('main', { class: 'layar' },
+      kepala('Ambil antrean'),
+      h('section', { class: 'kartu', style: 'display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center;padding:24px 18px' },
+        h('div', { class: 'lingkar', style: 'background:var(--emas-lembut);color:var(--awas-teks)' }, ikon('status')),
+        h('h2', { style: 'font-size:19px', text: 'Antrean sedang tutup' }),
+        h('p', { text: d.jam.alasan + '. Antrean dibuka kembali ' + d.jam.berikutnya + '.' }),
+        h('p', { class: 'kecil', text: 'Jam layanan: ' + ((d.kantor && d.kantor.jam) || '-') })),
+      h('div', { class: 'deret' },
+        h('button', { class: 'tombol tombol-kedua', onClick: () => gantiDengan('info') }, 'Info pajak'),
+        h('button', { class: 'tombol tombol-kedua', onClick: () => gantiDengan('syarat') }, 'Persyaratan')),
+      h('button', { class: 'tombol tombol-utama lebar', onClick: () => gantiDengan('kalkulator') }, 'Buka kalkulator pajak'));
   }
   if (aktif) {
     return h('main', { class: 'layar' },
@@ -644,7 +934,7 @@ LAYAR.form = function (arg) {
         h('div', { class: 'bidang' }, h('label', { class: 'label', for: 'f-uraian', text: 'Uraian kendala / permohonan' }), iUraian, hitung, err('uraian')),
         h('label', { class: 'centang', for: 'f-simpan' }, iSimpan, 'Simpan data saya untuk pengajuan berikutnya')),
       banner,
-      h('div', { class: 'kaki' }, tombol, h('p', { class: 'kecil', style: 'text-align:center', text: 'Data hanya digunakan untuk keperluan layanan KPP.' }))));
+      h('div', { class: 'kaki' }, tombol)));
 };
 
 LAYAR.sukses = function (arg) {
@@ -1019,7 +1309,8 @@ function mulai() {
     return;
   }
 
-  const rute = ['form', 'info', 'syarat', 'status'].indexOf(mode) >= 0 ? [{ layar: 'home' }, { layar: mode }] : [{ layar: 'home' }];
+  const rute = mode.indexOf('n_') === 0 ? [{ layar: 'home' }, { layar: 'nilai', arg: mode.slice(2) }]
+    : ['form', 'info', 'syarat', 'status', 'kalkulator'].indexOf(mode) >= 0 ? [{ layar: 'home' }, { layar: mode }] : [{ layar: 'home' }];
   const simpanan = bacaSimpanan();
   if (simpanan) {
     // tampil seketika memakai data umum yang tersimpan, data terbaru menyusul
@@ -1033,10 +1324,11 @@ function mulai() {
     S.janjiAwal = null;
     if (!r.ok) { if (!simpanan) render(LAYAR.galat({ pesan: r.pesan, ulang: true })); return; }
     S.data = r;
+    S.dataSegar = true;
     simpanUmum(r);
     if (!simpanan) { S.riwayat = rute; tampil(); return; }
     const cur = S.riwayat[S.riwayat.length - 1].layar;
-    if (cur === 'home' || cur === 'status') tampil();
+    if (cur === 'home' || cur === 'status' || (cur === 'form' && r.jam && r.jam.buka === false)) tampil();
     else if (S.saatSegar) S.saatSegar(r);
   }).catch(() => {
     S.janjiAwal = null;
