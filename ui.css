@@ -1,0 +1,90 @@
+/* Tipografi bersama & keadaan interaksi — 4.0
+ * Dipakai Mini App WP (index.html) dan dashboard petugas. Aturan tata letak dashboard ada di dashboard.css. */
+@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:200 800;font-display:swap;src:url('assets/plus-jakarta-sans-latin.woff2') format('woff2')}
+:root{--sans:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;--mono:var(--sans)}
+html,body,button,input,textarea,select,option,dialog,code,kbd,pre,.dash,.dash kbd,.dash code{font-family:var(--sans)}
+button,input,select,textarea{touch-action:manipulation}
+button{-webkit-tap-highlight-color:transparent}
+
+.ik{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:20px;height:20px;vertical-align:middle}
+.ik svg{width:100%;height:100%;display:block;pointer-events:none}
+
+/* layar memuat */
+.ui-boot{min-height:76dvh;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;text-align:center;padding:32px;color:var(--teks);font-family:var(--sans)}
+.ui-boot-mark{height:54px;width:54px;display:grid;place-items:center;border:1px solid #d4dfe8;border-radius:15px;background:#fff;color:#2b587e;font-size:16px;font-weight:750;box-shadow:0 4px 16px #17395709;margin-bottom:5px}
+.ui-boot-mark .ik{width:24px;height:24px}
+.ui-boot strong{font-size:20px;letter-spacing:-.5px;font-weight:650}
+.ui-boot-office{font-size:11px;color:#8c9aa7}
+.ui-boot-caption{font-size:11px;color:#8899a8}
+.ui-boot-track{width:116px;height:3px;background:#e3eaf0;border-radius:3px;overflow:hidden;margin:14px 0 4px}
+.ui-boot-track>span{display:block;height:100%;width:40%;border-radius:3px;background:#648cb0;animation:ui-progress 1.2s ease-in-out infinite}
+
+.ui-spin,.dash-echo-status.is-sending>.ik{animation:ui-rotate .85s linear infinite}
+@keyframes ui-rotate{to{transform:rotate(360deg)}}
+@keyframes ui-progress{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
+@keyframes ui-pulse{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes ui-enter{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+
+/* kerangka saat memuat */
+.ui-skeleton{padding:6px 0;pointer-events:none;animation:ui-pulse 1.5s ease-in-out infinite;min-width:0}
+.ui-skeleton-row{padding:17px 14px;display:flex;flex-direction:column;gap:10px;margin-bottom:8px}
+.ui-skeleton-row span{display:block;background:#e8edf1;height:9px;border-radius:3px;width:88%}
+.ui-skeleton-row span:first-child{width:42%;height:11px;background:#dfe6ec}
+.ui-skeleton-row span:last-child{width:65%}
+.ui-skeleton-list .ui-skeleton-row{padding-left:60px;border-bottom:1px solid #f1f3f5;position:relative;min-height:91px}
+.ui-skeleton-list .ui-skeleton-row:before{content:'';position:absolute;top:17px;left:16px;width:32px;height:32px;border-radius:50%;background:#e6ebef}
+.ui-skeleton-chat{display:flex;flex-direction:column;gap:16px}
+.ui-skeleton-chat .ui-skeleton-row{border-radius:8px;background:#fff;width:65%;border:1px solid #ecf0f3;min-height:90px}
+.ui-skeleton-chat .ui-skeleton-row:nth-child(even){align-self:flex-end;background:#f0f5fa;width:58%}
+
+/* tombol & transisi */
+.dash-btn,.dash-tool,.dash-template,.dash-filter,.dash-service-tab,.tombol,.item,.ubin,.sorot{transition:background-color .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease,transform .12s ease}
+.dash-btn .ik{width:15px;height:15px}
+.dash-tool .ik{width:19px;height:19px}
+.dash-btn[aria-busy=true]{cursor:progress;opacity:.8}
+.dash-btn[aria-busy=true]>.ik{flex-shrink:0}
+.dash-finish .ik{width:15px;height:15px}
+.dash-finish{min-width:150px}
+.dash-preview-dialog,.dash-quick-dialog{animation:ui-enter .16s ease-out}
+.dash-chat-heading h2{letter-spacing:-.35px}
+.dash-message{letter-spacing:-.08px}
+.dash-message-tools button{display:inline-flex;align-items:center;gap:4px}
+.dash-message-tools .ik{width:12px;height:12px}
+.dash-message-file>.ik{width:22px;height:22px}
+.dash-message-file>span:nth-child(2){flex:1}
+
+/* pesan yang sedang dikirim */
+.dash-sending-preview{display:flex;flex-direction:column;margin-top:16px}
+.dash-local-message{animation:ui-enter .15s ease-out}
+.dash-echo-status{display:flex;align-items:center;justify-content:flex-end;gap:5px;font-size:10px;color:#6b8ba5;margin-top:8px}
+.dash-echo-status>.ik{width:12px;height:12px}
+.dash-message.internal .dash-echo-status{color:#9b8556}
+.dash[data-loading=true] .dash-count{color:#97a4af}
+
+.tombol[aria-busy=true]{cursor:progress;display:flex;align-items:center;justify-content:center;gap:9px}
+.tombol[aria-busy=true]:before{content:'';width:15px;height:15px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:ui-rotate .85s linear infinite;flex-shrink:0}
+
+/* efek arah kursor hanya untuk mouse/trackpad */
+@media (hover:hover) and (pointer:fine){
+  .dash-btn.primary:not(:disabled):hover,.tombol-utama:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 4px 12px #1c4a7421}
+  .dash-template:not(:disabled):hover{box-shadow:0 2px 6px #1c4a740a}
+  .dash-btn:not(:disabled):active,.tombol:not(:disabled):active{transform:translateY(0) scale(.985)}
+  .dash input,.dash select,.dash textarea{transition:border-color .15s,box-shadow .15s}
+  .dash input:focus,.dash select:focus,.dash textarea:focus{box-shadow:0 0 0 3px #3474b00b}
+}
+
+/* HP: ukuran ikon & kerangka (tata letak ada di dashboard.css) */
+@media (max-width:760px){
+  .dash-finish{min-width:0}
+  .dash-message-tools .ik{width:14px;height:14px}
+  .ui-boot-office{font-size:11px}
+  .ui-skeleton-chat .ui-skeleton-row{width:79%}
+  .ui-skeleton-chat .ui-skeleton-row:nth-child(even){width:70%}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .ui-spin,.dash-echo-status.is-sending>.ik,.ui-boot-track>span,.ui-skeleton,.putar,.tombol[aria-busy=true]:before{animation:none!important}
+  .ui-boot-track>span{width:100%;opacity:.55}
+  .dash-preview-dialog,.dash-quick-dialog,.dash-local-message{animation:none}
+  .dash *,.tombol,.item,.ubin,.sorot{transition:none!important;scroll-behavior:auto!important}
+}
