@@ -43,10 +43,14 @@ p { margin: 0; }
 
 /* ---------- pita merek (beranda) ---------- */
 .pita { margin: 0 -16px; padding: 18px 20px 58px; background: var(--merek); color: #FFFFFF; border-bottom: 3px solid var(--emas); }
-.logo-baris { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
-.logo { height: 44px; padding: 6px 10px; border-radius: 10px; background: #FFFFFF; display: inline-flex; align-items: center; }
-.logo img { height: 32px; width: auto; display: block; }
-.monogram { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.1); color: var(--emas); display: grid; place-items: center; font-weight: 800; font-size: 14px; letter-spacing: .5px; }
+.kop { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+.logo-baris { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.logo { height: 56px; min-width: 56px; padding: 4px; border-radius: 14px; background: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; }
+.logo img { height: 48px; width: auto; max-width: 132px; object-fit: contain; display: block; border-radius: 10px; }
+.kop-teks { display: flex; flex-direction: column; gap: 2px; min-width: 0; margin: 0; font-weight: 400; }
+.kop-teks b { font-size: 17px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.2px; line-height: 1.2; }
+.kop-teks span { font-size: 13px; color: #C9D6E3; line-height: 1.3; }
+.monogram { width: 56px; height: 56px; border-radius: 12px; background: rgba(255,255,255,.1); color: var(--emas); display: grid; place-items: center; font-weight: 800; font-size: 14px; letter-spacing: .5px; }
 .salam { font-size: 14px; color: #C9D6E3; }
 .salam b { display: block; font-size: 24px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.3px; margin-top: 2px; }
 .kantor { margin-top: 10px; font-size: 14px; font-weight: 600; color: #E3EBF4; display: flex; align-items: center; gap: 8px; }
@@ -56,15 +60,15 @@ p { margin: 0; }
 .kepala { padding: 18px 0 2px; display: flex; flex-direction: column; gap: 4px; }
 
 /* ---------- karcis antrean (elemen khas) ---------- */
-.karcis { position: relative; display: grid; grid-template-columns: 116px minmax(0, 1fr); background: var(--permukaan); border-radius: 18px; overflow: hidden;
+.karcis { position: relative; display: grid; grid-template-columns: 124px minmax(0, 1fr); background: var(--permukaan); border-radius: 18px; overflow: hidden;
   box-shadow: 0 1px 2px rgba(14,42,71,.08), 0 8px 24px rgba(14,42,71,.10); }
-.karcis::before, .karcis::after { content: ''; position: absolute; left: 105px; width: 22px; height: 22px; border-radius: 50%; background: var(--dasar); }
+.karcis::before, .karcis::after { content: ''; position: absolute; left: 113px; width: 22px; height: 22px; border-radius: 50%; background: var(--dasar); }
 .karcis::before { top: -11px; }
 .karcis::after { bottom: -11px; }
-.karcis-kiri { background: var(--merek); color: #FFFFFF; padding: 16px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
-.karcis-kiri .kecil { color: #C9D6E3; font-size: 11px; }
-.karcis-kiri .nomor { font-size: 26px; color: var(--emas); }
-.karcis-kanan { padding: 14px 16px 14px 20px; border-left: 2px dashed var(--garis); display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.karcis-kiri { background: var(--emas); color: var(--merek); padding: 16px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.karcis-kiri .kecil { color: #5C4200; font-size: 11px; font-weight: 700; }
+.karcis-kiri .nomor { font-size: 32px; color: var(--merek); font-weight: 800; letter-spacing: 0; }
+.karcis-kanan { padding: 14px 16px 14px 20px; border-left: 2px dashed rgba(14,42,71,.25); display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .ditimpa { margin-top: -40px; }
 .karcis.ditimpa::before { background: var(--merek); }
 :root[data-theme="dark"] .karcis, :root[data-theme="dark"] .karcis-tegak { border: 1px solid var(--garis); }
@@ -78,9 +82,9 @@ p { margin: 0; }
 
 /* karcis tegak (setelah kirim formulir) */
 .karcis-tegak { position: relative; background: var(--permukaan); border-radius: 20px; overflow: hidden; box-shadow: 0 1px 2px rgba(14,42,71,.08), 0 10px 30px rgba(14,42,71,.12); }
-.karcis-tegak .atas { background: var(--merek); color: #FFFFFF; padding: 22px 20px 26px; text-align: center; display: flex; flex-direction: column; gap: 4px; align-items: center; }
-.karcis-tegak .atas .nomor { font-size: 52px; color: var(--emas); line-height: 1.1; }
-.karcis-tegak .atas .kecil { color: #C9D6E3; }
+.karcis-tegak .atas { background: var(--emas); color: var(--merek); padding: 22px 20px 26px; text-align: center; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.karcis-tegak .atas .nomor { font-size: 60px; color: var(--merek); font-weight: 800; line-height: 1.1; }
+.karcis-tegak .atas .kecil { color: #5C4200; font-weight: 700; }
 .karcis-tegak .bawah { padding: 18px 20px 20px; border-top: 2px dashed var(--garis); position: relative; }
 .karcis-tegak .bawah::before, .karcis-tegak .bawah::after { content: ''; position: absolute; top: -12px; width: 22px; height: 22px; border-radius: 50%; background: var(--dasar); }
 .karcis-tegak .bawah::before { left: -11px; }
@@ -121,6 +125,14 @@ p { margin: 0; }
 .sorot .item-judul { font-size: 14px; }
 
 .kontak { display: flex; flex-direction: column; gap: 12px; font-size: 14px; }
+.medsos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.medsos button { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px; border-radius: 14px; border: 1px solid var(--garis); background: var(--permukaan); text-align: left; cursor: pointer; }
+.medsos .lingkar-ik { width: 34px; height: 34px; border-radius: 10px; background: var(--rona); color: var(--rona-teks); display: grid; place-items: center; flex-shrink: 0; }
+.medsos .lingkar-ik .ik { width: 18px; height: 18px; }
+.medsos b { display: block; font-size: 13px; }
+.medsos small { display: block; font-size: 12px; color: var(--teks-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aksi-karcis { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.tombol-kecil { min-height: 40px; padding: 0 14px; border-radius: 12px; font-size: 13px; }
 .kontak-baris { display: flex; gap: 10px; align-items: flex-start; }
 .kontak-baris .ik { width: 18px; height: 18px; margin-top: 2px; color: var(--teks-2); }
 .tautan { background: none; border: none; padding: 0; color: var(--utama); font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
@@ -243,6 +255,14 @@ const LOGO = [
   { src: 'logo-kemenkeu.png', alt: 'Logo Kementerian Keuangan' },
   { src: 'logo-djp.png', alt: 'Logo Direktorat Jenderal Pajak' },
 ];
+// ===== Media sosial KPP (sumber: halaman kantor di pajak.go.id); ubah bila perlu =====
+const MEDSOS = [
+  { nama: 'Instagram', akun: '@pajaksbyrungkut', url: 'https://www.instagram.com/pajaksbyrungkut', ikon: 'kamera' },
+  { nama: 'X (Twitter)', akun: '@pajaksbyrungkut', url: 'https://x.com/pajaksbyrungkut', ikon: 'pesan' },
+  { nama: 'Channel Telegram', akun: '@infopajaksbyrungkut', url: 'https://t.me/infopajaksbyrungkut', ikon: 'siaran' },
+  { nama: 'YouTube', akun: 'Pajak Surabaya Rungkut', url: 'https://www.youtube.com/results?search_query=Pajak+Surabaya+Rungkut', ikon: 'putar' },
+  { nama: 'Facebook', akun: 'KPP Pratama Surabaya Rungkut', url: 'https://www.facebook.com/search/top?q=KPP%20Pratama%20Surabaya%20Rungkut', ikon: 'orang' },
+];
 // ===========================================================
 
 const tg = window.Telegram ? window.Telegram.WebApp : null;
@@ -268,6 +288,11 @@ const IKON = {
   dokumen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>',
   alur: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><path d="M6 8v8"/><path d="M12 6h8M12 18h8M12 12h8"/></svg>',
   catatan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>',
+  kamera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  pesan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"/></svg>',
+  siaran: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>',
+  putar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/></svg>',
+  orang: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.5A5 5 0 0 1 21 19"/></svg>',
   bintang: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg>',
 };
 
@@ -412,16 +437,20 @@ LAYAR.home = function () {
   const peta = k.alamat ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(k.nama + ' ' + k.alamat) : '';
   return h('main', { class: 'layar' },
     h('header', { class: 'pita' },
-      logoBaris(),
-      h('p', { class: 'salam' }, sapaan() + ',', h('b', { text: namaDepan() })),
-      h('h1', { class: 'kantor', text: k.nama || 'KPP Pratama Surabaya Rungkut' })),
-    aktif ? karcis(aktif, { timpa: true, aksi: h('button', { class: 'tautan', style: 'align-self:flex-start', onClick: () => buka('status') }, 'Lihat detail antrean') }) : null,
-    !aktif && d.lewatKantor && !d.chatKantorAktif && d.akunKantor ? h('button', { class: 'sorot', style: 'margin-top:-40px;background:var(--permukaan);border-color:var(--garis)', onClick: () => { try { tg.openTelegramLink(d.akunKantor.linkHalo); } catch (e) { bukaTautan(d.akunKantor.linkHalo); } } },
+      h('div', { class: 'kop' },
+        logoBaris(),
+        h('h1', { class: 'kop-teks' }, h('b', { text: 'Layanan Telegram' }), h('span', { text: k.nama || 'KPP Pratama Surabaya Rungkut' }))),
+      h('p', { class: 'salam' }, sapaan() + ',', h('b', { text: namaDepan() }))),
+    aktif ? karcis(aktif, { timpa: true, aksi: h('div', { class: 'aksi-karcis' },
+      h('button', { class: 'tautan', onClick: () => buka('status') }, 'Lihat detail'),
+      h('button', { class: 'tombol tombol-bahaya tombol-kecil', onClick: () => batal(aktif) }, 'Batalkan antrean')) }) : null,
+    d.akunKantorSendiri ? h('div', { class: 'banner banner-awas', style: 'margin-top:-40px;position:relative' }, h('b', { text: 'Anda memakai akun kantor. ' }), 'Halaman ini untuk wajib pajak. Untuk menguji, buka dari akun Telegram lain (akun WP).') : null,
+    !d.akunKantorSendiri && !aktif && d.lewatKantor && !d.chatKantorAktif && d.akunKantor ? h('button', { class: 'sorot', style: 'margin-top:-40px;background:var(--permukaan);border-color:var(--garis)', onClick: () => { try { tg.openTelegramLink(d.akunKantor.linkHalo); } catch (e) { bukaTautan(d.akunKantor.linkHalo); } } },
       h('span', { class: 'lingkar', style: 'width:40px;height:40px;background:var(--rona);color:var(--rona-teks)' }, ikon('chat')),
       h('span', { class: 'item-isi' }, h('span', { class: 'item-judul', text: 'Chat dengan @' + d.akunKantor.username }), h('span', { class: 'kecil', text: 'Agar balasan petugas tersimpan di chat resmi KPP.' })),
       h('span', { class: 'panah' }, ikon('panah'))) : null,
-    h('nav', { class: 'ubin-grid', 'aria-label': 'Pilih layanan', style: aktif || (d.lewatKantor && !d.chatKantorAktif && d.akunKantor) ? '' : 'margin-top:-40px' },
-      ubin('antrean', 'Ambil antrean', 'Isi formulir, langsung dapat nomor', () => buka('form'), true),
+    h('nav', { class: 'ubin-grid', 'aria-label': 'Pilih layanan', style: aktif || d.akunKantorSendiri || (d.lewatKantor && !d.chatKantorAktif && d.akunKantor) ? '' : 'margin-top:-40px' },
+      ubin('antrean', 'Ambil antrean', 'Isi formulir dan nomor antrean layanan', () => buka('form'), true),
       ubin('info', 'Info pajak', 'Ringkasan peraturan terbaru', () => buka('info')),
       ubin('syarat', 'Persyaratan', 'Dokumen tiap permohonan', () => buka('syarat')),
       ubin('status', 'Antrean saya', d.tiketSaya.length ? 'Lihat posisi antrean' : 'Cek posisi atau batalkan', () => buka('status'), false, d.tiketSaya.length)),
@@ -434,9 +463,16 @@ LAYAR.home = function () {
     h('section', { class: 'kartu kontak', 'aria-label': 'Kontak kantor' },
       barisKontak('lokasi', k.alamat, peta ? h('button', { class: 'tautan', style: 'display:block;margin-top:4px', onClick: () => bukaTautan(peta) }, 'Petunjuk arah') : null),
       barisKontak('jam', k.jam ? 'Jam layanan: ' + k.jam : ''),
-      barisKontak('telepon', k.telepon),
-      barisKontak('chat', k.kontak)));
+      barisKontak('telepon', k.telepon)),
+    MEDSOS.length ? h('div', { class: 'judul-bagian' }, h('h3', { text: 'Media sosial KPP Rungkut' })) : null,
+    MEDSOS.length ? h('nav', { class: 'medsos', 'aria-label': 'Media sosial' }, MEDSOS.map(m => h('button', { onClick: () => bukaMedsos(m.url) },
+      h('span', { class: 'lingkar-ik' }, ikon(m.ikon)),
+      h('span', { style: 'min-width:0' }, h('b', { text: m.nama }), h('small', { text: m.akun }))))) : null);
 };
+function bukaMedsos(url) {
+  if (/^https:\/\/t\.me\//.test(url) && tg && tg.openTelegramLink) { try { tg.openTelegramLink(url); return; } catch (e) {} }
+  bukaTautan(url);
+}
 function ubin(ik, judul, ket, aksi, utama, jumlah) {
   return h('button', { class: 'ubin' + (utama ? ' utama' : ''), onClick: aksi },
     h('span', { class: 'lingkar-ik' }, ikon(ik)),
@@ -448,6 +484,14 @@ function ubin(ik, judul, ket, aksi, utama, jumlah) {
 LAYAR.form = function (arg) {
   const d = S.data; const p = d.profil || {}; arg = arg || {};
   const aktif = d.tiketSaya[0];
+  if (d.akunKantorSendiri) {
+    return h('main', { class: 'layar' },
+      kepala('Ambil antrean'),
+      h('div', { class: 'banner banner-awas' }, h('b', { text: 'Anda sedang memakai akun kantor. ' }),
+        'Telegram mengenali siapa yang menekan tombol, jadi antrean akan tercatat atas nama akun kantor dan balasannya masuk ke chat bot. ',
+        'Untuk menguji sebagai wajib pajak, buka chat akun kantor dari akun Telegram lain, lalu tekan Ambil antrean dari sana.'),
+      h('button', { class: 'tombol tombol-garis lebar', onClick: () => tg.close() }, 'Tutup'));
+  }
   if (aktif) {
     return h('main', { class: 'layar' },
       kepala('Ambil antrean'),
@@ -786,7 +830,7 @@ LAYAR.status = function () {
   }
   return h('main', { class: 'layar' },
     kepala('Antrean saya', 'Petugas membalas lewat chat Telegram.'),
-    list.map(t => karcis(t, { aksi: t.status === 'Menunggu' ? h('button', { class: 'tombol tombol-bahaya', style: 'min-height:44px', onClick: () => batal(t) }, 'Batalkan antrean') : null })),
+    list.map(t => karcis(t, { aksi: h('button', { class: 'tombol tombol-bahaya', style: 'min-height:44px', onClick: () => batal(t) }, 'Batalkan antrean') })),
     h('button', { class: 'tombol tombol-garis lebar', onClick: muatUlang }, 'Muat ulang'));
 };
 function batal(t) {
@@ -800,7 +844,10 @@ function batal(t) {
       await muatUlang();
     } catch (e) { tampil(); tg.showAlert ? tg.showAlert(e.message || 'Gagal membatalkan.') : alert(e.message); }
   };
-  if (tg.showConfirm) tg.showConfirm('Batalkan antrean ' + t.id + '?', lanjut); else lanjut(confirm('Batalkan antrean ' + t.id + '?'));
+  const tanya = t.status === 'Dilayani'
+    ? 'Antrean ' + t.id + ' sedang dilayani petugas. Tetap batalkan?'
+    : 'Batalkan antrean ' + t.id + '?';
+  if (tg.showConfirm) tg.showConfirm(tanya, lanjut); else lanjut(confirm(tanya));
 }
 async function muatUlang() {
   render(layarMemuat());
