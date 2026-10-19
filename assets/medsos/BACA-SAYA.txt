@@ -1,0 +1,44 @@
+SLOT LOGO MEDIA SOSIAL — Mini App Layanan (versi 4.0)
+=====================================================
+
+Folder ini berisi 6 slot logo yang tampil di bagian "Media sosial resmi KPP"
+pada beranda Mini App wajib pajak. File yang ada sekarang hanya GAMBAR
+PENGGANTI NETRAL (ikon umum berwarna biru muda), bukan logo platform.
+
+Cara mengganti dengan logo resmi
+--------------------------------
+1. Unduh logo resmi dari halaman "brand resources" / "brand guidelines"
+   milik masing-masing platform (cari di mesin pencari, mis.
+   "Instagram brand resources", "TikTok brand guidelines",
+   "YouTube brand resources", "Meta brand resources Facebook",
+   "X brand toolkit", "Telegram logo press").
+2. Simpan sebagai PNG persegi, minimal 120 x 120 piksel
+   (disarankan 192 x 192 atau 256 x 256), latar transparan atau putih.
+3. Beri nama PERSIS seperti tabel di bawah (huruf kecil semua), lalu
+   unggah ke folder miniapp/assets/medsos/ di GitHub sehingga file lama
+   tertimpa (Add file → Upload files → Commit changes).
+
+   Platform            Nama file yang diunggah
+   ------------------  -----------------------
+   Instagram           instagram.png
+   TikTok              tiktok.png
+   YouTube             youtube.png
+   Facebook            facebook.png
+   X                   x.png
+   Channel Telegram    telegram.png
+
+4. Buka ulang Mini App (tarik ke bawah / tutup lalu buka lagi). Bila
+   logo lama masih terlihat, tunggu 1–2 menit karena GitHub Pages
+   menyimpan cache.
+
+Catatan
+-------
+- Jangan mengubah warna, bentuk, atau proporsi logo resmi; ikuti pedoman
+  merek masing-masing platform dan ketentuan kehumasan kantor.
+- Bila sebuah file dihapus atau gagal dimuat, aplikasi otomatis memakai
+  ikon umum, jadi tampilan tetap rapi.
+- Alamat akun dan tautan diatur di miniapp/index.html pada bagian
+  "const MEDSOS = [ ... ]" (kolom akun, url, dan logo).
+- Format lain (JPG/WebP/SVG) juga dapat dipakai, tetapi ubah juga nama
+  file pada kolom logo di "const MEDSOS". Paling mudah: tetap PNG dengan
+  nama di atas.
